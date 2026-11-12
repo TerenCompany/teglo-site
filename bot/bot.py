@@ -12,12 +12,17 @@
   SITE_URL   — адрес сайта с демо, например https://teglo.ru (необязательно)
 """
 import asyncio
+import hashlib
+import hmac
 import json
 import logging
 import os
+import time
+from urllib.parse import parse_qsl
 from pathlib import Path
 
 import aiohttp
+from aiohttp import web
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
@@ -155,6 +160,31 @@ NICHES = {
 }
 NICHE_BTN = [("☕ Кофейня", "zerno"), ("👕 Бренд одежды", "dakai"), ("💐 Цветы", "pion")]
 DEMO_NOTE = "<i>Демо: данные вымышленные.</i>"
+
+
+MOD_NAMES = ["Баллы и штампы", "Отзывы на карты", "Виджеты в чате", "Уровни", "Рассылки и триггеры",
+             "Достижения", "Модули ниши", "Wallet", "Игры", "Итоги года", "Вау-дизайн"]
+FX_NAMES = ["Частицы", "3D-объект", "Фото в слове", "Бегущая строка", "Печатающийся чек", "Жидкое стекло",
+            "Живой текст", "Голографическая карта"]
+TIER_NAMES = {"1": "Старт", "2": "Основа", "3": "Про"}
+
+
+def decode_config(arg: str) -> dict:
+    """c_<ниша><тариф><касса>_<маска36>_<эффект>, например c_z3i_133_0"""
+    try:
+        _, head, mask, fx = arg.split("_")
+        niche = {"z": "☕ Кофейня", "d": "👕 Бренд одежды", "p": "💐 Цветы"}.get(head[0], "—")
+        tier = TIER_NAMES.get(head[1], "—")
+        pos = "с интеграцией учёта" if head[2] == "i" else "без интеграции"
+        bits = int(mask, 36)
+        mods = [name for i, name in enumerate(MOD_NAMES) if bits >> i & 1]
+        fx_i = int(fx)
+        if "Вау-дизайн" in mods and 0 <= fx_i < len(FX_NAMES):
+            mods[mods.index("Вау-дизайн")] = f"Вау-дизайн ({FX_NAMES[fx_i]})"
+        text = f"{niche} · тариф «{tier}» · {pos}\nМодули: {', '.join(mods) or '—'}"
+        return {"niche": niche, "text": text}
+    except Exception:
+        return {"niche": "—", "text": "конфигурация не распознана"}
 
 
 class Lead(StatesGroup):
@@ -299,6 +329,14 @@ dp = Dispatcher(storage=MemoryStorage())
 @dp.message(CommandStart())
 async def start(m: Message, command: CommandObject, state: FSMContext):
     await state.clear()
+    if command.args and command.args.startswith("c_"):
+        conf = decode_config(command.args)
+        await state.update_data(niche=conf["niche"], config=conf["text"])
+        await state.set_state(Lead.business)
+        await m.answer(
+            f"Вы собрали в конструкторе:\n\n{conf['text']}\n\n"
+            "Осталось 2 вопроса. Как называется заведение или бренд? Можно ссылку на соцсети или карты.")
+        return
     if command.args == "lead":
         await m.answer("Отлично, оставим заявку — это 3 коротких вопроса.")
         await ask_niche(m, state)
@@ -346,12 +384,8 @@ async def guest_menu_items(c: CallbackQuery):
     await c.answer()
 
 
-@dp.callback_query(F.data.startswith("gl:"))
-async def guest_live(c: CallbackQuery):
-    key = c.data.split(":")[1]
+async def run_live(bot: Bot, chat: int, key: str):
     n = NICHES[key]
-    await c.answer("Смотрите — сообщение обновится само")
-    chat = c.message.chat.id
     data = {"g": f"виджет · {n['brand']}", "t": n["live_title"], "s": n["live_steps"], "k": 0,
             "l": n["live_lines"], "d": n["live_done"], "a": n["color"], "b": n["btn"], "bd": n["btn_done"]}
     try:
@@ -361,44 +395,52 @@ async def guest_live(c: CallbackQuery):
             await asyncio.sleep(2.5)
             data["k"] = step
             await edit_widget(chat, mid, data)
-        await c.message.answer(
+        await bot.send_message(chat,
             f"☝️ Это <b>HTML-виджет</b> — новинка Telegram (ноябрь 2026). Статус меняется внутри одного "
             f"сообщения, кнопка работает прямо в чате.\n<i>{n['live_src']}</i>", reply_markup=back(key))
         return
     except Exception as e:
         log.warning("widget unavailable, fallback to text: %s", e)
-    msg = await c.message.answer(live_text(n, 0))
+    msg = await bot.send_message(chat, live_text(n, 0))
     for step in (1, 2):
         await asyncio.sleep(2.5)
         try:
             await msg.edit_text(live_text(n, step), reply_markup=back(key) if step == 2 else None)
-        except Exception as e:  # пользователь мог удалить сообщение
+        except Exception as e:
             log.warning("live edit failed: %s", e)
             return
 
 
-@dp.callback_query(F.data.startswith("gg:"))
-async def guest_game(c: CallbackQuery):
-    key = c.data.split(":")[1]
+async def run_wheel(bot: Bot, chat: int, key: str):
     n = NICHES[key]
-    await c.answer()
     try:
-        await send_widget(c.message.chat.id, "wheel",
+        await send_widget(chat, "wheel",
                           {"t": f"Колесо призов · {n['brand']}", "p": n["wheel"], "a": n["color"], "b": n["color2"]},
                           f"Колесо призов {n['brand']} — крутите прямо в сообщении")
-        await c.message.answer(
+        await bot.send_message(chat,
             "☝️ Игра живёт прямо в сообщении — без перехода в приложение. Призы и шансы задаёт владелец. "
             "Игры — модуль после запуска, тариф «Про».", reply_markup=back(key))
         return
     except Exception as e:
         log.warning("widget unavailable, fallback to dice: %s", e)
-    d = await c.message.answer_dice(emoji=n["dice"])
+    d = await bot.send_dice(chat, emoji=n["dice"])
     await asyncio.sleep(3.5)
     prize = n["prizes"][d.dice.value % len(n["prizes"])]
-    await c.message.answer(
+    await bot.send_message(chat,
         f"🎉 Ваш приз: <b>{prize}</b>\n\nПризы и шансы задаёт владелец, результат честно считает Telegram. "
-        f"Игры — модуль после запуска, в тарифе «Про».\n{DEMO_NOTE}",
-        reply_markup=back(key))
+        f"Игры — модуль после запуска, в тарифе «Про».\n{DEMO_NOTE}", reply_markup=back(key))
+
+
+@dp.callback_query(F.data.startswith("gl:"))
+async def guest_live(c: CallbackQuery):
+    await c.answer("Смотрите — сообщение обновится само")
+    await run_live(c.bot, c.message.chat.id, c.data.split(":")[1])
+
+
+@dp.callback_query(F.data.startswith("gg:"))
+async def guest_game(c: CallbackQuery):
+    await c.answer()
+    await run_wheel(c.bot, c.message.chat.id, c.data.split(":")[1])
 
 
 @dp.callback_query(F.data.startswith("gp:"))
@@ -528,7 +570,8 @@ async def finish_lead(chat_id: int, user, contact: str, state: FSMContext, reply
         f"Бизнес: {data.get('niche', '—')}\n"
         f"Название: {escape(data.get('business', '—'))}\n"
         f"Связь: {escape(contact)}\n"
-        f"Кто: {who}"
+        + (f"Конструктор: {escape(data['config'])}\n" if data.get("config") else "")
+        + f"Кто: {who}"
     )
     try:
         await reply_to.bot.send_message(OWNER_ID, text)
@@ -550,13 +593,60 @@ async def fallback(m: Message):
     await m.answer("Выберите, что показать 👇", reply_markup=main_menu())
 
 
+# ---------------------------------------------------------------- API для мини-приложения
+_last_call: dict[int, float] = {}
+
+
+def check_init_data(init_data: str) -> dict | None:
+    """Проверка подписи Telegram WebApp initData (core.telegram.org/bots/webapps)."""
+    pairs = dict(parse_qsl(init_data, keep_blank_values=True))
+    got = pairs.pop("hash", "")
+    check = "\n".join(f"{k}={v}" for k, v in sorted(pairs.items()))
+    secret = hmac.new(b"WebAppData", BOT_TOKEN.encode(), hashlib.sha256).digest()
+    calc = hmac.new(secret, check.encode(), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(calc, got):
+        return None
+    if time.time() - int(pairs.get("auth_date", 0)) > 86400:
+        return None
+    try:
+        return json.loads(pairs.get("user", "{}"))
+    except ValueError:
+        return None
+
+
+def make_api(bot: Bot) -> web.Application:
+    async def widget(req: web.Request):
+        try:
+            body = await req.json()
+        except Exception:
+            return web.json_response({"ok": False}, status=400)
+        user = check_init_data(str(body.get("init_data", "")))
+        if not user or "id" not in user:
+            return web.json_response({"ok": False, "error": "bad signature"}, status=403)
+        uid = int(user["id"])
+        if time.time() - _last_call.get(uid, 0) < 5:
+            return web.json_response({"ok": False, "error": "slow down"}, status=429)
+        _last_call[uid] = time.time()
+        key = body.get("niche") if body.get("niche") in NICHES else "zerno"
+        runner = run_wheel if body.get("kind") == "wheel" else run_live
+        asyncio.create_task(runner(bot, uid, key))
+        return web.json_response({"ok": True})
+
+    app = web.Application(client_max_size=16 * 1024)
+    app.router.add_post("/api/widget", widget)
+    return app
+
+
 async def main():
     bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     await bot.set_my_commands([])  # меню команд не нужно — всё на кнопках
     if SITE_URL.startswith("https://"):
         # кнопка «Приложение» слева от поля ввода — открывает мини-приложение
         await bot.set_chat_menu_button(menu_button=MenuButtonWebApp(text="Приложение", web_app=WebAppInfo(url=app_url())))
-    log.info("Teglo bot started")
+    runner = web.AppRunner(make_api(bot))
+    await runner.setup()
+    await web.TCPSite(runner, "0.0.0.0", 8080).start()
+    log.info("Teglo bot started (API :8080)")
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 

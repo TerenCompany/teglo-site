@@ -352,6 +352,41 @@ body.appv .tg-bottom [data-tabbtn].on{background:#2AABEE;color:#fff}
 .cat-add{position:absolute;right:8px;top:8px;width:30px;height:30px;border-radius:50%;border:0;background:var(--b-dark);color:#fff;font:700 16px/1 sans-serif;cursor:pointer}
 .cart-bar{display:flex;justify-content:space-between;align-items:center;color:var(--b-muted)}
 .cart-bar.on{background:var(--b-dark);color:#fff}
+
+/* конструктор */
+.build{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:24px;align-items:start}
+.bcol{display:flex;flex-direction:column;gap:14px}
+.bstep{display:flex;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px}
+.bnum{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--svoy);color:#0E0F12;font-weight:800}
+.bbody{flex:1;min-width:0}
+.bbody h3{margin:4px 0 12px;font-size:20px;letter-spacing:-.02em}
+.bbody h3 small{font:500 12px "JetBrains Mono",monospace;color:var(--muted);margin-left:8px}
+.blab{display:block;font:500 11px "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 8px}
+.binp{width:100%;background:transparent;border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--text);font:500 16px "Inter Tight",sans-serif}
+.binp:focus{outline:none;border-color:var(--svoy)}
+.build .chip{cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--text);padding:8px 14px;border-radius:999px;font:500 14px "Inter Tight",sans-serif}
+.build .chip.on{background:var(--text);color:#0E0F12}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sw{width:32px;height:32px;border-radius:50%;border:2px solid transparent;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(255,255,255,.15)}
+.sw.on{border-color:var(--svoy)}
+#bColor{width:40px;height:32px;border:0;background:transparent;cursor:pointer}
+.bmods{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bmod{display:flex;gap:10px;align-items:flex-start;text-align:left;background:transparent;border:1px solid var(--line);border-radius:14px;padding:12px;color:var(--text);cursor:pointer}
+.bmod.on{border-color:rgba(198,244,50,.5);background:rgba(198,244,50,.06)}
+.bmod div{flex:1;min-width:0}.bmod b{display:block;font-size:14px}.bmod span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.bmod em{font:500 10px "JetBrains Mono",monospace;font-style:normal;color:var(--muted);text-transform:uppercase}
+.bmod .tgl{flex:none;margin-top:2px}
+.btot b{display:block;font-size:26px;letter-spacing:-.02em;margin-top:4px}.btot small{color:var(--svoy)}
+.bnote{color:var(--muted);font-size:14px}
+.bgo{display:inline-block;margin-top:6px}
+.bprev{position:sticky;top:84px}
+.bprev .tabs{display:flex;gap:6px;margin-bottom:12px}
+.bprev .tabs button{padding:7px 12px;border-radius:999px;background:var(--panel2);color:var(--muted);font-size:13px;font-weight:600}
+.bprev .tabs button.on{background:var(--svoy);color:var(--ink)}
+.bprev .phone{position:relative;top:0;margin:0 auto}
+.bprev .site{position:relative;top:0;height:720px}
+@media (max-width:980px){.build{grid-template-columns:1fr}.bprev{position:relative;top:0}.bmods{grid-template-columns:1fr}}
+.tosend{margin-top:10px;width:100%;background:#2AABEE!important;color:#fff!important}
 </style></head>
 <body>
 <header class="bar">
@@ -364,7 +399,7 @@ body.appv .tg-bottom [data-tabbtn].on{background:#2AABEE;color:#fff}
     </nav>
     <div class="sp"></div>
     <div class="seg mode" role="tablist" aria-label="Режим">
-      <button data-mode="guest" class="on">Гость</button><button data-mode="admin">Владелец</button><button data-mode="mods">Модули</button>
+      <button data-mode="guest" class="on">Гость</button><button data-mode="admin">Владелец</button><button data-mode="mods">Модули</button><button data-mode="build">Конструктор</button>
     </div>
     <div class="seg tier" role="tablist" aria-label="Тариф">
       <button data-tier="1">Старт</button><button data-tier="2" class="on">Основа</button><button data-tier="3">Про</button>
@@ -392,6 +427,7 @@ body.appv .tg-bottom [data-tabbtn].on{background:#2AABEE;color:#fff}
   <section id="guestView" class="guest"></section>
   <section id="adminView" class="adm hide"></section>
   <section id="modsView" class="mods hide"></section>
+  <section id="buildView" class="build hide"></section>
 
   <div class="foot">
     <span>Серые карточки с замком — что добавится на следующем тарифе. Сайт и бот листаются. Бот в демо — Telegram.</span>
@@ -623,13 +659,30 @@ pion:{
 /* ---------- состояние ---------- */
 const qs=new URLSearchParams(location.search);
 let niche=N[qs.get("n")]?qs.get("n"):"zerno";
-let mode=["guest","admin","mods"].includes(qs.get("m"))?qs.get("m"):"guest";
+let mode=["guest","admin","mods","build"].includes(qs.get("m"))?qs.get("m"):"guest";
 let tier=+qs.get("t")||2;
 let modFx=null, prevTab="fx";
 const APPV=qs.get("view")==="app";
 let appTab="card";
 if(APPV){document.body.classList.add("appv");mode="guest";if(!qs.get("t"))tier=3;}
-const C=()=>N[niche];
+const BMODS=[
+  ["points","Баллы и штампы","кэшбэк, «6-й в подарок»",1],
+  ["reviews","Отзывы на карты","4–5★ — на Яндекс Карты, плохие — вам",1],
+  ["widgets","Виджеты в чате","живой статус заказа прямо в сообщении",2],
+  ["levels","Уровни гостей","Гость → Завсегдатай → Свой",2],
+  ["push","Рассылки и триггеры","день рождения, «давно не были»",2],
+  ["ach","Достижения","значки за серии и визиты",2],
+  ["niche","Модули ниши","предзаказ · дропы и размеры · доставка и даты",2],
+  ["wallet","Карта в Wallet","на экране блокировки iPhone (скоро)",2],
+  ["games","Игры","колесо, скретч-карта, адвент",3],
+  ["recap","Итоги года","«Твой год с нами» — как Spotify Wrapped",3],
+  ["wow","Вау-дизайн","эффект на первом экране сайта",3]];
+const SWATCH=["#A0522D","#111111","#C2185B","#2E7D32","#1565C0","#6A1B9A","#E65100","#00897B"];
+let cfg=null;
+function cfgReset(){const n=N[niche];cfg={name:n.brand,color:n.colors.acc,pos:niche==="zerno"?"iiko":"none",fx:n.fx,mods:new Set(["points","reviews","widgets","levels","push","ach","niche"])};}
+function cfgTier(){let t=cfg.pos==="iiko"?2:1;BMODS.forEach(m=>{if(cfg.mods.has(m[0]))t=Math.max(t,m[3])});return t}
+const C=()=>{if(mode!=="build"||!cfg)return N[niche];const n=N[niche];return Object.assign({},n,{brand:cfg.name||n.brand,title:`«${cfg.name||n.brand}»`,colors:Object.assign({},n.colors,{acc:cfg.color})})};
+const HAS=m=>mode!=="build"||!cfg||cfg.mods.has(m);
 
 function qrSVG(seed){let x=seed,s='';const r=()=>(x=(x*9301+49297)%233280)/233280;const n=21;
   for(let i=0;i<n;i++)for(let j=0;j<n;j++){const f=(i<7&&j<7)||(i>n-8&&j<7)||(i<7&&j>n-8);if(f){const ii=i<7?i:i-(n-7),jj=j<7?j:j-(n-7);if(ii===0||ii===6||jj===0||jj===6||(ii>1&&ii<5&&jj>1&&jj<5))s+=`<rect x="${j}" y="${i}" width="1" height="1"/>`}else if(r()>.52)s+=`<rect x="${j}" y="${i}" width="1" height="1"/>`}
@@ -675,7 +728,7 @@ function bubbleStart(root){clearInterval(liveT);const el=root.querySelector("[da
   const a=el.querySelector("[data-bact]");if(a)a.onclick=()=>{el.querySelector("[data-bdone]").classList.add("on");a.textContent="✓ "+a.textContent}}
 
 /* ---------- гость ---------- */
-function renderGuest(){
+function renderGuest(target="guestView",part="both"){
   const c=C(),k=c.card,s2=c.site2;
   const items=`<div class="s-sec" id="s-items"><h3>${c.itemsTitle}</h3><div class="s-items">${c.items.map(i=>`<div class="s-item"><div class="ph" style="background:${i[2]}"></div><b>${i[0]}</b><span>${i[1]}</span></div>`).join('')}</div></div>`;
   const loyal=`<div class="s-loyal"><div class="qrb">${qrSVG(niche.length*577)}</div><div><b style="font-size:20px;letter-spacing:-.02em">Карта гостя в Telegram</b><p>${k.stampsTotal?k.stampLabel:'Баллы за каждую покупку, уровни и ранний доступ'} — без приложения.</p><a class="s-btn" href="#" style="background:#fff;color:var(--b-dark)">Получить карту</a></div></div>`;
@@ -692,7 +745,7 @@ function renderGuest(){
     <div class="viewport">
       <div class="s-nav"><b>${c.brand}</b><span>${c.nav.map(x=>`<a href="#" style="text-decoration:none">${x}</a>`).join('')}</span></div>
       <div class="s-hero">
-        ${tier>=3?fxHTML(modFx||c.fx,c):''}
+        ${(mode==='build'?(HAS('wow')&&cfg.fx):tier>=3)?fxHTML(mode==='build'?cfg.fx:(modFx||c.fx),c):''}
         <span class="wow-tag">вау-дизайн</span>
         <div class="mono" style="color:var(--b-acc);position:relative;z-index:2">// ${c.brand}</div>
         <h2 style="margin-top:10px">${c.hero[0]}</h2>
@@ -712,33 +765,35 @@ function renderGuest(){
     </div>
   </div>`;
 
-  const b=[], T=(tab,h)=>b.push(`<div class="tabblk" data-tab="${tab}">${h}</div>`);
+  const b=[], T=(tab,h,m)=>{if(m&&!HAS(m))return;b.push(`<div class="tabblk" data-tab="${tab}">${h}</div>`)};
   T("card",`<div class="w gcard" style="position:relative"><div class="holo"></div><div class="top"><span class="brand">${c.brand}</span><span class="lvl">${tier>=2?k.level:'карта гостя'}</span></div><div class="qr">${qrSVG(niche.length*977)}</div><div class="code">${k.code}</div><div class="bal"><span class="mono" style="opacity:.75">${k.unit}</span><b>${k.bal}</b></div></div>`);
-  T("card",wrapLock(`<h4>Новое в Telegram <small>HTML-виджет</small></h4>${bubbleHTML(c)}`,2));
-  if(k.stampsTotal) T("card",`<div class="w"><h4>${k.stampLabel}</h4><div class="stamps">${Array.from({length:k.stampsTotal},(_,i)=>`<i class="${i<k.stamps?'on':''} ${i===k.stampsTotal-1?'gift':''}"></i>`).join('')}</div></div>`);
-  T("card",wrapLock(`<h4>Уровень <small>до «${k.nextLvl}» 3 визита</small></h4><div class="prog"><i style="width:72%"></i></div>`,2));
-  T("card",wrapLock(`<h4>Достижения <small>3 из 6</small></h4><div class="ach">${c.ach.map(a=>`<div class="${a[2]?'':'off'}">${icon(IC[a[0]],'var(--b-acc)')}${a[1]}</div>`).join('')}</div>`,2));
-  T("card",wrapLock(gameHTML(c.game),3));
-  T("card",wrapLock(`<h4>${c.game2[0]} <span class="game-tag">после запуска</span></h4><div class="li"><span>${c.game2[1]}</span></div>`,3));
-  T("card",wrapLock(`<h4>Карта в Wallet <small>скоро</small></h4><div class="li"><span>Карта на экране блокировки iPhone</span><span class="pill">+ Wallet</span></div>`,2));
+  T("card",wrapLock(`<h4>Новое в Telegram <small>HTML-виджет</small></h4>${bubbleHTML(c)}${APPV?`<button class="btn-b tosend" data-send="status">↗ Отправить этот виджет в чат</button>`:''}`,2),"widgets");
+  if(k.stampsTotal) T("card",`<div class="w"><h4>${k.stampLabel}</h4><div class="stamps">${Array.from({length:k.stampsTotal},(_,i)=>`<i class="${i<k.stamps?'on':''} ${i===k.stampsTotal-1?'gift':''}"></i>`).join('')}</div></div>`,"points");
+  T("card",wrapLock(`<h4>Уровень <small>до «${k.nextLvl}» 3 визита</small></h4><div class="prog"><i style="width:72%"></i></div>`,2),"levels");
+  T("card",wrapLock(`<h4>Достижения <small>3 из 6</small></h4><div class="ach">${c.ach.map(a=>`<div class="${a[2]?'':'off'}">${icon(IC[a[0]],'var(--b-acc)')}${a[1]}</div>`).join('')}</div>`,2),"ach");
+  T("card",wrapLock(gameHTML(c.game)+(APPV?`<button class="btn-b tosend" data-send="wheel">↗ Прислать колесо в чат</button>`:''),3),"games");
+  T("card",wrapLock(`<h4>${c.game2[0]} <span class="game-tag">после запуска</span></h4><div class="li"><span>${c.game2[1]}</span></div>`,3),"games");
+  T("card",wrapLock(`<h4>Карта в Wallet <small>скоро</small></h4><div class="li"><span>Карта на экране блокировки iPhone</span><span class="pill">+ Wallet</span></div>`,2),"wallet");
   T("catalog",`<div class="w"><h4>${c.itemsTitle}</h4><div class="cat-grid">${c.items.map(i=>`<div class="cat-it"><div class="ph" style="background:${i[2]}"></div><b>${i[0]}</b><span>${i[1]}</span><button class="cat-add" data-add="${i[0]}">+</button></div>`).join('')}</div></div>`);
   T("catalog",`<div class="w"><h4>${c.catalogTitle}</h4><div class="list">${c.catalog.map(i=>`<div class="li"><span style="color:var(--b-text)">${i[0]}</span><b>${i[1]}</b></div>`).join('')}</div></div>`);
   T("catalog",`<div class="w cart-bar" data-cart><span>Корзина пуста</span><b></b></div>`);
   T("profile",`<div class="w"><h4>Профиль</h4><div class="li"><span>Имя</span><b>Гость</b></div><div class="li" style="margin-top:6px"><span>Уведомления в Telegram</span><i class="tgl"></i></div><div class="li" style="margin-top:6px"><span>Рассылки об акциях (согласие)</span><i class="tgl"></i></div></div>`);
-  c.extrasGuest.forEach(e=>T("profile",wrapLock(e.html,e.t)));
-  T("profile",wrapLock(`<h4>Сообщения от ${c.brand} <small>рассылки и триггеры</small></h4><div class="list">${c.msgs.map((m,i)=>`<div class="msg">${m}<time>${i?'вчера':'сегодня, 12:04'}</time></div>`).join('')}</div>`,2));
-  T("profile",`<div class="w"><h4>Как вам у нас?</h4><div class="stars"><i></i><i></i><i></i><i></i><i class="e"></i></div><div class="li"><span>4–5★ — предложим отзыв на Яндекс Картах и в 2ГИС</span></div></div>`);
-  T("profile",wrapLock(`<h4>Твой год с ${c.brand}</h4><div class="list">${c.recap.map(r=>`<div class="li"><b class="big" style="font-size:22px">${r[0]}</b><span>${r[1]}</span></div>`).join('')}</div>`,3));
+  c.extrasGuest.forEach(e=>T("profile",wrapLock(e.html,e.t),"niche"));
+  T("profile",wrapLock(`<h4>Сообщения от ${c.brand} <small>рассылки и триггеры</small></h4><div class="list">${c.msgs.map((m,i)=>`<div class="msg">${m}<time>${i?'вчера':'сегодня, 12:04'}</time></div>`).join('')}</div>`,2),"push");
+  T("profile",`<div class="w"><h4>Как вам у нас?</h4><div class="stars"><i></i><i></i><i></i><i></i><i class="e"></i></div><div class="li"><span>4–5★ — предложим отзыв на Яндекс Картах и в 2ГИС</span></div></div>`,"reviews");
+  T("profile",wrapLock(`<h4>Твой год с ${c.brand}</h4><div class="list">${c.recap.map(r=>`<div class="li"><b class="big" style="font-size:22px">${r[0]}</b><span>${r[1]}</span></div>`).join('')}</div>`,3),"recap");
 
   const sw=APPV?`<div class="av-sw"><div class="av-row">${[["zerno","☕ Кофейня"],["dakai","👕 Бренд"],["pion","💐 Цветы"]].map(x=>`<button data-avn="${x[0]}" class="${x[0]===niche?'on':''}">${x[1]}</button>`).join('')}</div><div class="av-row">${[1,2,3].map(t=>`<button data-avt="${t}" class="${t===tier?'on':''}">${TIERS[t][0]}</button>`).join('')}</div></div>`:'';
   const phone=`<div class="phone"><div class="scr">${sw}
     <div class="tg-top"><div class="av" style="background:var(--b-acc)">${c.brand[0].toUpperCase()}</div><div><b>${c.brand}</b><span>бот · ${c.bot}</span></div></div>
     <div class="app">${b.join('')}</div>
     <div class="tg-bottom">${[["card","Карта"],["catalog",niche==='zerno'?'Меню':'Каталог'],["profile","Профиль"]].map(x=>`<div data-tabbtn="${x[0]}" class="${APPV&&appTab===x[0]?'on':''}">${x[1]}</div>`).join('')}</div></div></div>`;
-  const v=document.getElementById("guestView"); v.innerHTML=(APPV?"":site)+phone;
+  const v=document.getElementById(target); v.innerHTML=part==="site"?site:part==="phone"?phone:(APPV?"":site)+phone;
   v.querySelectorAll("[data-avn]").forEach(b=>b.onclick=()=>{niche=b.dataset.avn;render()});
   if(APPV){v.querySelectorAll(".tabblk").forEach(x=>x.hidden=x.dataset.tab!==appTab);
     v.querySelectorAll("[data-tabbtn]").forEach(x=>x.onclick=()=>{appTab=x.dataset.tabbtn;render();scrollTo(0,0)});}
+  v.querySelectorAll("[data-send]").forEach(x=>x.onclick=async()=>{const tg=window.Telegram&&Telegram.WebApp;if(!tg||!tg.initData){alert("Откройте мини-приложение через бота @tegloru_bot — тогда виджет придёт в чат.");return}
+    x.disabled=true;x.textContent="Отправляем…";try{const r=await fetch("/api/widget",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({init_data:tg.initData,kind:x.dataset.send,niche})});if(!r.ok)throw 0;x.textContent="✓ Отправлено — смотрите чат";try{tg.HapticFeedback.notificationOccurred("success")}catch(e){}setTimeout(()=>tg.close(),900)}catch(e){x.disabled=false;x.textContent="Не получилось, попробуйте ещё раз"}});
   const cart=[];v.querySelectorAll("[data-add]").forEach(x=>x.onclick=()=>{cart.push(x.dataset.add);x.textContent="✓";const bar=v.querySelector("[data-cart]");bar.classList.add("on");bar.querySelector("span").textContent=`В корзине: ${cart.length}`;bar.querySelector("b").textContent="Оформить →";try{Telegram.WebApp.HapticFeedback.impactOccurred("light")}catch(e){}});
   v.querySelectorAll("[data-avt]").forEach(b=>b.onclick=()=>{tier=+b.dataset.avt;render()}); fxStart(v); if(tier>=3) gameStart(v); if(tier>=2) bubbleStart(v);
 }
@@ -760,7 +815,9 @@ function renderAdmin(){
   o.push(L(`<h4>ИИ-аналитик <small>по данным ${a.pos.sys}</small></h4><div class="ai"><div class="q">${a.ai[0]}</div><div class="a">${a.ai[1]}</div></div>`,3,"card c7"));
   o.push(L(`<h4>Игры <small>после запуска</small></h4><div class="a-list">${a.games.map(g=>`<div class="a-li"><span style="color:var(--text)">${g[0]}</span><span>${g[1]}</span></div>`).join('')}</div>`,3,"card c6"));
   o.push(L(`<h4>Точки и каналы <small>сегодня</small></h4><div class="a-list">${a.points.map(p=>`<div class="a-li"><span style="color:var(--text)">${p[0]}</span><span>${p[1]} <span class="tag ok">${p[2]}</span></span></div>`).join('')}</div>`,3,"card c6"));
+  o.push(`<div class="card c12"><h4>Настройки и модули <small>собрать под себя</small></h4><div class="a-li"><span>Включайте и выключайте блоки, меняйте название и цвет — сайт, бот и мини-приложение обновятся сразу.</span><button class="btn" data-gobuild>Открыть конструктор</button></div></div>`);
   document.getElementById("adminView").innerHTML=o.join('');
+  document.querySelectorAll("[data-gobuild]").forEach(x=>x.onclick=()=>{mode="build";render();scrollTo({top:0})});
 }
 function heat(){const days=["пн","вт","ср","чт","пт","сб","вс"],hrs=[8,9,10,11,12,13,14,15,16,17,18,19,20,21];let s=`<div class="heat"><span></span>${hrs.map(h=>`<span style="text-align:center">${h}</span>`).join('')}`;let seed=niche.length*31;const r=()=>(seed=(seed*9301+49297)%233280)/233280;
   days.forEach((d,di)=>{s+=`<span>${d}</span>`;hrs.forEach(h=>{let v=.15+r()*.3;if(niche==='zerno'){if(h<=10)v+=.45;if(h>=13&&h<=14)v+=.25}else if(niche==='dakai'){if(h>=19)v+=.4;if(di>=5)v+=.2}else{if(h>=11&&h<=14)v+=.3;if(di===4)v+=.3}v=Math.min(1,v);s+=`<i style="background:rgba(198,244,50,${v.toFixed(2)})"></i>`})});return s+`</div>`}
@@ -812,23 +869,61 @@ function renderPreview(){
   fxStart(pv);
 }
 
+/* ---------- конструктор ---------- */
+let bPrev="phone";
+function cfgCode(){const nc={zerno:"z",dakai:"d",pion:"p"}[niche];let mask=0;BMODS.forEach((m,i)=>{if(cfg.mods.has(m[0]))mask|=1<<i});return `c_${nc}${cfgTier()}${cfg.pos==="iiko"?"i":"n"}_${mask.toString(36)}_${FX.findIndex(f=>f[0]===cfg.fx)}`}
+function renderBuild(){
+  const t=cfgTier(), n=N[niche];
+  const posOpts=niche==="zerno"?[["none","Без кассы"],["iiko","iiko"]]:niche==="dakai"?[["none","Без учёта"],["iiko","МойСклад"]]:[["none","Без учёта"],["iiko","Posiflora"]];
+  const left=`<div class="bcol">
+   <div class="bstep"><div class="bnum">1</div><div class="bbody"><h3>Анкета</h3>
+     <label class="blab">Название</label><input class="binp" id="bName" maxlength="24" value="${(cfg.name||'').replace(/"/g,'&quot;')}" placeholder="Например, «Утро»">
+     <label class="blab">Ниша</label><div class="chips">${[["zerno","Кофейня"],["dakai","Бренд одежды"],["pion","Цветы"]].map(x=>`<button class="chip ${x[0]===niche?'on':''}" data-bn="${x[0]}">${x[1]}</button>`).join('')}</div>
+     <label class="blab">Цвет бренда</label><div class="swatches">${SWATCH.map(c=>`<button class="sw ${c===cfg.color?'on':''}" data-bc="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}<input type="color" id="bColor" value="${cfg.color}" title="свой цвет"></div>
+     <label class="blab">Учёт и касса</label><div class="chips">${posOpts.map(x=>`<button class="chip ${x[0]===cfg.pos?'on':''}" data-bp="${x[0]}">${x[1]}</button>`).join('')}</div>
+   </div></div>
+   <div class="bstep"><div class="bnum">2</div><div class="bbody"><h3>Модули <small>${cfg.mods.size} включено</small></h3>
+     <div class="bmods">${BMODS.map(m=>`<button class="bmod ${cfg.mods.has(m[0])?'on':''}" data-bm="${m[0]}"><i class="tgl ${cfg.mods.has(m[0])?'':'off'}"></i><div><b>${m[1]}</b><span>${m[2]}</span></div><em>${TIERS[m[3]][0]}</em></button>`).join('')}</div>
+     ${cfg.mods.has("wow")?`<label class="blab">Вау-эффект</label><div class="chips">${FX.map(f=>`<button class="chip ${f[0]===cfg.fx?'on':''}" data-bf="${f[0]}">${f[1]}</button>`).join('')}</div>`:''}
+   </div></div>
+   <div class="bstep"><div class="bnum">3</div><div class="bbody"><h3>Итог</h3>
+     <div class="btot"><div><span class="mono">тариф</span><b>${TIERS[t][0]} · ${TIERS[t][1]}</b><small>${TIERS[t][2]}</small></div></div>
+     <p class="bnote">${cfg.pos==="iiko"?`Интеграция с ${posOpts[1][1]} — от «Основы». `:''}Запуск за 7 дней, первым 20 заведениям — бесплатно.</p>
+     <a class="cta bgo" href="${TG_LINK.split('?')[0]}?start=${cfgCode()}" target="_blank" rel="noopener">Запустить так →</a>
+   </div></div></div>`;
+  const right=`<div class="bprev"><div class="tabs"><button data-bv="phone" class="${bPrev==='phone'?'on':''}">Мини-приложение и бот</button><button data-bv="site" class="${bPrev==='site'?'on':''}">Сайт</button></div><div id="bPrevBox"></div></div>`;
+  const v=document.getElementById("buildView"); v.innerHTML=left+right;
+  renderGuest("bPrevBox",bPrev);
+  const re=()=>render();
+  v.querySelector("#bName").oninput=e=>{cfg.name=e.target.value;clearTimeout(window._bt);window._bt=setTimeout(()=>{const pos=e.target.selectionStart;re();const i=document.getElementById("bName");i.focus();i.setSelectionRange(pos,pos)},250)};
+  v.querySelectorAll("[data-bn]").forEach(b=>b.onclick=()=>{niche=b.dataset.bn;cfg=null;re()});
+  v.querySelectorAll("[data-bc]").forEach(b=>b.onclick=()=>{cfg.color=b.dataset.bc;re()});
+  v.querySelector("#bColor").oninput=e=>{cfg.color=e.target.value;clearTimeout(window._bc);window._bc=setTimeout(re,120)};
+  v.querySelectorAll("[data-bp]").forEach(b=>b.onclick=()=>{cfg.pos=b.dataset.bp;re()});
+  v.querySelectorAll("[data-bm]").forEach(b=>b.onclick=()=>{const m=b.dataset.bm;cfg.mods.has(m)?cfg.mods.delete(m):cfg.mods.add(m);re()});
+  v.querySelectorAll("[data-bf]").forEach(b=>b.onclick=()=>{cfg.fx=b.dataset.bf;re()});
+  v.querySelectorAll("[data-bv]").forEach(b=>b.onclick=()=>{bPrev=b.dataset.bv;re()});
+}
+
 /* ---------- склейка ---------- */
 function applyColors(){const c=C().colors,r=document.documentElement.style;r.setProperty('--b-bg',c.bg);r.setProperty('--b-text',c.text);r.setProperty('--b-muted',c.muted);r.setProperty('--b-acc',c.acc);r.setProperty('--b-dark',c.dark);r.setProperty('--b-card',c.card)}
 function render(){
+  if(mode==="build"){if(!cfg||cfg._n!==niche){cfgReset();cfg._n=niche}tier=cfgTier()}
   const c=C();
   document.title=`${c.title} — демо Teglo`;
   document.querySelectorAll(".niches a").forEach(a=>a.classList.toggle("on",a.dataset.n===niche));
   document.querySelectorAll("[data-mode]").forEach(b=>b.classList.toggle("on",b.dataset.mode===mode));
   document.querySelectorAll("[data-tier]").forEach(b=>b.classList.toggle("on",+b.dataset.tier===tier));
   document.getElementById("lgKicker").textContent=c.kicker;
-  document.getElementById("lgTitle").textContent=c.title+(mode==="guest"?" — глазами гостя":mode==="admin"?" — кабинет владельца":" — библиотека модулей");
-  document.getElementById("lgText").textContent=mode==="mods"?"Все модули платформы по разделам. Нажмите на вау-эффект или игру — посмотрите вживую на этом заведении.":c.text;
+  document.getElementById("lgTitle").textContent=(mode==="build"?"Соберите своё заведение":c.title+(mode==="guest"?" — глазами гостя":mode==="admin"?" — кабинет владельца":" — библиотека модулей"));
+  document.getElementById("lgText").textContent=mode==="build"?"Заполните анкету, включите нужные модули — справа сразу видно, как это будет выглядеть у гостей. Тариф считается сам.":mode==="mods"?"Все модули платформы по разделам. Нажмите на вау-эффект или игру — посмотрите вживую на этом заведении.":c.text;
   document.getElementById("tierPrice").textContent=TIERS[tier][0]+" · "+TIERS[tier][1];
   document.getElementById("tierFounder").textContent=TIERS[tier][2];
   document.getElementById("root").className="wrap tier-"+(tier===3?"pro":tier===2?"base":"start");
   applyColors();
-  ["guest","admin","mods"].forEach(m=>document.getElementById(m+"View").classList.toggle("hide",mode!==m));
-  if(mode==="guest")renderGuest();else if(mode==="admin")renderAdmin();else renderMods();
+  ["guest","admin","mods","build"].forEach(m=>document.getElementById(m+"View").classList.toggle("hide",mode!==m));
+  document.querySelector(".seg.tier").classList.toggle("hide",mode==="build");
+  if(mode==="guest")renderGuest();else if(mode==="admin")renderAdmin();else if(mode==="mods")renderMods();else renderBuild();
   const u=new URL(location.href);u.searchParams.set("n",niche);u.searchParams.set("m",mode);u.searchParams.set("t",tier);history.replaceState(null,"",u);
 }
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;render()});

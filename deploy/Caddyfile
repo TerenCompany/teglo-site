@@ -1,14 +1,19 @@
 # Внутренний веб-сервер: отдаёт статику, TLS делает внешний прокси (или Caddyfile.edge).
 :80 {
-	root * /srv
-	encode zstd gzip
-	header /fonts/* Cache-Control "public, max-age=31536000, immutable"
-	header /vendor/* Cache-Control "public, max-age=31536000, immutable"
-	header /manifest.webmanifest Content-Type "application/manifest+json"
-	header {
-		X-Content-Type-Options nosniff
-		Referrer-Policy strict-origin-when-cross-origin
-		-Server
+	handle /api/* {
+		reverse_proxy teglo-bot:8080
 	}
-	file_server
+	handle {
+		root * /srv
+		encode zstd gzip
+		header /fonts/* Cache-Control "public, max-age=31536000, immutable"
+		header /vendor/* Cache-Control "public, max-age=31536000, immutable"
+		header /manifest.webmanifest Content-Type "application/manifest+json"
+		header {
+			X-Content-Type-Options nosniff
+			Referrer-Policy strict-origin-when-cross-origin
+			-Server
+		}
+		file_server
+}
 }

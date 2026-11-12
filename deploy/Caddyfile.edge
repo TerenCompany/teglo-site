@@ -1,15 +1,20 @@
 # Режим «свой Caddy»: порты 80/443 свободны, сертификат Let's Encrypt выпускается сам.
 {$DOMAIN}, www.{$DOMAIN} {
-	root * /srv
-	encode zstd gzip
-	header /fonts/* Cache-Control "public, max-age=31536000, immutable"
-	header /vendor/* Cache-Control "public, max-age=31536000, immutable"
-	header /manifest.webmanifest Content-Type "application/manifest+json"
-	header {
-		X-Content-Type-Options nosniff
-		Referrer-Policy strict-origin-when-cross-origin
-		Strict-Transport-Security "max-age=31536000"
-		-Server
+	handle /api/* {
+		reverse_proxy teglo-bot:8080
 	}
-	file_server
+	handle {
+		root * /srv
+		encode zstd gzip
+		header /fonts/* Cache-Control "public, max-age=31536000, immutable"
+		header /vendor/* Cache-Control "public, max-age=31536000, immutable"
+		header /manifest.webmanifest Content-Type "application/manifest+json"
+		header {
+			X-Content-Type-Options nosniff
+			Referrer-Policy strict-origin-when-cross-origin
+			Strict-Transport-Security "max-age=31536000"
+			-Server
+		}
+		file_server
+}
 }
