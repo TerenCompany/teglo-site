@@ -337,6 +337,12 @@ async def start(m: Message, command: CommandObject, state: FSMContext):
             f"Вы собрали в конструкторе:\n\n{conf['text']}\n\n"
             "Осталось 2 вопроса. Как называется заведение или бренд? Можно ссылку на соцсети или карты.")
         return
+    if command.args == "custom":
+        await state.update_data(custom=True)
+        await m.answer("Обсудим индивидуальный проект: свою механику лояльности, нестандартный сайт или бота. "
+                       "Сначала 3 коротких вопроса, задачу подробно разберём на созвоне.")
+        await ask_niche(m, state)
+        return
     if command.args == "lead":
         await m.answer("Отлично, оставим заявку — это 3 коротких вопроса.")
         await ask_niche(m, state)
@@ -566,7 +572,7 @@ async def finish_lead(chat_id: int, user, contact: str, state: FSMContext, reply
     await state.clear()
     who = f"@{user.username}" if user.username else f'<a href="tg://user?id={user.id}">{user.full_name}</a>'
     text = (
-        "🔥 <b>Новая заявка Teglo</b>\n\n"
+        ("🛠 <b>Заявка: индивидуальный проект</b>\n\n" if data.get("custom") else "🔥 <b>Новая заявка Teglo</b>\n\n") +
         f"Бизнес: {data.get('niche', '—')}\n"
         f"Название: {escape(data.get('business', '—'))}\n"
         f"Связь: {escape(contact)}\n"
