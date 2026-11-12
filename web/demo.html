@@ -653,7 +653,7 @@ pion:{
   recap:[["14","букетов за год"],["Пионы","любимые цветы"],["0","забытых дат"]],
   admin:{
     kpi:[["Клиентов в базе","2 106","+64 за неделю"],["Заказов за неделю","188","+12%"],["Средний чек","4 380 ₽","+220 ₽"],["Дат в календаре","1 940","напоминаний: 37"]],
-    pos:{t1:"Заказы приходят заявкой в бот — флорист подтверждает и ставит слот доставки.",t2:"Posiflora синхронизирована · заказы и остатки обновляются сами", sys:"Posiflora"},
+    pos:{t1:"Заказы приходят заявкой в бот — флорист подтверждает и ставит слот доставки.",t2:"Заказы, слоты доставки и база клиентов — в Teglo, флорист отмечает статусы кнопками. Синхронизация с Posiflora — по запросу", sys:"Posiflora", up:"В «Основе» — рассылки, даты и подписки; синхронизация с Posiflora — по запросу", ai:"заказов и календаря дат", manual:true},
     reviews:[["Олег, 5 ★","Привезли минута в минуту","ok"],["Вика, 5 ★","Букет как на фото","ok"],["Таня, 3 ★","Курьер опоздал на 20 мин","bad"]],
     triggers:[["Важная дата","напомнить за 3 дня",1],["8 марта / 14 февраля","рассылка за неделю",1],["Подписка","сборка по пятницам",1],["Давно не заказывали","−10% на букет",0]],
     segments:["Все с согласием · 1 560","Даты в декабре · 312","Подписчики · 74"],
@@ -816,7 +816,7 @@ function renderGuest(target="guestView",part="both"){
 function renderAdmin(){
   const a=C().admin,L=(h,n,c)=>wrapLock(h,n,c),o=[];
   a.kpi.forEach(k=>o.push(`<div class="card kpi c3"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="d">${k[2]}</div></div>`));
-  o.push(`<div class="card c6"><h4>Касса и начисления <small>${tier>=2?'интеграция':'свой учёт'}</small></h4><div class="a-li"><span>${tier>=2?a.pos.t2:a.pos.t1}</span><span class="tag ${tier>=2?'ok':''}">${tier>=2?'авто':'вручную'}</span></div>${tier<2?`<div class="a-li" style="margin-top:10px"><span>В «Основе» — автоматически через ${a.pos.sys}</span><span class="tag">апгрейд</span></div>`:''}</div>`);
+  o.push(`<div class="card c6"><h4>Касса и начисления <small>${tier>=2&&!a.pos.manual?'интеграция':'свой учёт'}</small></h4><div class="a-li"><span>${tier>=2?a.pos.t2:a.pos.t1}</span><span class="tag ${tier>=2&&!a.pos.manual?'ok':''}">${tier>=2&&!a.pos.manual?'авто':'вручную'}</span></div>${tier<2?`<div class="a-li" style="margin-top:10px"><span>${a.pos.up||`В «Основе» — автоматически через ${a.pos.sys}`}</span><span class="tag">апгрейд</span></div>`:''}</div>`);
   o.push(`<div class="card c6"><h4>Отзывы <small>плохие — сразу вам</small></h4><div class="a-list">${a.reviews.map(r=>`<div class="a-li"><div><b style="font-weight:600">${r[0]}</b><br><span>${r[1]}</span></div><span class="tag ${r[2]}">${r[2]==='bad'?'в работу':'→ Яндекс Карты'}</span></div>`).join('')}</div></div>`);
   o.push(L(`<h4>Рассылка <small>только с согласием</small></h4><div class="chips" style="margin-bottom:10px">${a.segments.map((s,i)=>`<span class="tag ${i===1?'ok':''}">${s}</span>`).join('')}</div><div class="compose">${C().msgs[0]}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn">Отправить в Telegram</button><button class="btn g">Запланировать</button></div><div class="a-li" style="margin-top:12px;border:0"><span>Прошлая: открыли 64% · пришли по ней 23 гостя</span></div>`,2,"card c7"));
   o.push(L(`<h4>Сводка владельцу <small>каждый день в 22:00</small></h4><div class="tgmsg">${a.summary}</div>`,2,"card c5"));
@@ -826,7 +826,7 @@ function renderAdmin(){
   o.push(L(`<h4>${a.salesTitle} <small>за неделю</small></h4><div class="bars">${a.sales.map(s=>`<div><i style="height:${s[1]}%"></i></div>`).join('')}</div><div class="bars-l">${a.sales.map(s=>`<span>${s[0]}</span>`).join('')}</div>`,2,"card c6"));
   o.push(L(`<h4>Тепловая карта <small>часы × дни</small></h4>${heat()}`,3,"card c6"));
   o.push(L(`<h4>Кто перестал ходить <small>были постоянными</small></h4><div class="a-list">${a.churn.map(c=>`<div class="a-li"><div><b style="font-weight:600">${c[0]}</b><br><span>${c[1]}</span></div><button class="btn">Вернуть</button></div>`).join('')}</div>`,3,"card c5"));
-  o.push(L(`<h4>ИИ-аналитик <small>по данным ${a.pos.sys}</small></h4><div class="ai"><div class="q">${a.ai[0]}</div><div class="a">${a.ai[1]}</div></div>`,3,"card c7"));
+  o.push(L(`<h4>ИИ-аналитик <small>по данным ${a.pos.ai||a.pos.sys}</small></h4><div class="ai"><div class="q">${a.ai[0]}</div><div class="a">${a.ai[1]}</div></div>`,3,"card c7"));
   o.push(L(`<h4>Игры <small>после запуска</small></h4><div class="a-list">${a.games.map(g=>`<div class="a-li"><span style="color:var(--text)">${g[0]}</span><span>${g[1]}</span></div>`).join('')}</div>`,3,"card c6"));
   o.push(L(`<h4>Точки и каналы <small>сегодня</small></h4><div class="a-list">${a.points.map(p=>`<div class="a-li"><span style="color:var(--text)">${p[0]}</span><span>${p[1]} <span class="tag ok">${p[2]}</span></span></div>`).join('')}</div>`,3,"card c6"));
   o.push(`<div class="card c12"><h4>Настройки и модули <small>собрать под себя</small></h4><div class="a-li"><span>Включайте и выключайте блоки, меняйте название и цвет — сайт, бот и мини-приложение обновятся сразу.</span><button class="btn" data-gobuild>Открыть конструктор</button></div></div>`);
@@ -839,7 +839,7 @@ function heat(){const days=["пн","вт","ср","чт","пт","сб","вс"],hr
 /* ---------- модули ---------- */
 const MODS=[
   ["Виджеты в чате Telegram · новое",[["Живой статус заказа","Одно сообщение само меняется: принят → готовим → готов. Без спама уведомлениями.",2],["Дроп в сообщении","Таймер, размеры и кнопка «Отложить» прямо в чате.",2],["Игра в сообщении","Колесо или скретч внутри чата — прогресс сохраняется.",3],["Карта гостя в чате","Баланс и QR обновляются в том же сообщении после покупки.",2]]],
-  ["Лояльность",[["Карта гостя","QR и короткий код, баланс, уровень — в Telegram и по ссылке.",1],["Баллы и штампы","Кэшбэк, «6-й в подарок», сгорание баллов.",1],["Интеграция с кассой","iiko, МойСклад, Posiflora — баллы и заказы приходят сами.",2],["Уровни","Гость → Завсегдатай → Свой, привилегии на каждом.",2],["Реферальная программа","Приведи друга — бонус обоим.",3]]],
+  ["Лояльность",[["Карта гостя","QR и короткий код, баланс, уровень — в Telegram и по ссылке.",1],["Баллы и штампы","Кэшбэк, «6-й в подарок», сгорание баллов.",1],["Интеграция с учётом","iiko и МойСклад — баллы, заказы и остатки приходят сами. Posiflora — по запросу.",2],["Уровни","Гость → Завсегдатай → Свой, привилегии на каждом.",2],["Реферальная программа","Приведи друга — бонус обоим.",3]]],
   ["Игры",[["Достижения","Значки за серии, время визитов, отзывы.",2],["Серии визитов","Неделя за неделей — бонус, есть «заморозка».",2],["Колесо призов","Крутите после N-го визита. Модуль после запуска.",3,"wheel"],["Скретч-карта","Сотри и получи промокод. Модуль после запуска.",3,"scratch"],["Адвент-календарь","Окошко в день к празднику. Модуль после запуска.",3,"advent"]]],
   ["Связь с гостями",[["Telegram-бот","Карта, меню, заказы и сообщения в одном чате.",1],["Веб-приложение","Сайт на экран «Домой», уведомления без App Store.",1],["Отзывы","4–5★ — на Яндекс Карты и в 2ГИС, плохие — владельцу.",1],["Рассылки","По сегментам, только с согласием, с отпиской.",2],["Триггеры","День рождения, «давно не были», сгорание баллов.",2],["Wallet","Карта на экране блокировки iPhone. Скоро.",2]]],
   ["Аналитика",[["Сводка в 22:00","Выручка, чеки, новые и вернувшиеся гости — в Telegram.",2],["Тепловая карта","Часы × дни: когда пусто, когда пик.",3],["Кто перестал ходить","Постоянные гости, которые пропали, — кнопка «Вернуть».",3],["ИИ-аналитик","Спросите словами: «почему упала выручка?».",3]]]
@@ -906,7 +906,7 @@ let bPrev="phone";
 function cfgCode(){const nc={zerno:"z",dakai:"d",pion:"p"}[niche];let mask=0;BMODS.forEach((m,i)=>{if(cfg.mods.has(m[0]))mask|=1<<i});return `c_${nc}${cfgTier()}${cfg.pos==="iiko"?"i":"n"}_${mask.toString(36)}_${FX.findIndex(f=>f[0]===cfg.fx)}`}
 function renderBuild(){
   const t=cfgTier(), n=N[niche];
-  const posOpts=niche==="zerno"?[["none","Без кассы"],["iiko","iiko"]]:niche==="dakai"?[["none","Без учёта"],["iiko","МойСклад"]]:[["none","Без учёта"],["iiko","Posiflora"]];
+  const posOpts=niche==="zerno"?[["none","Без кассы"],["iiko","iiko"]]:niche==="dakai"?[["none","Без учёта"],["iiko","МойСклад"]]:[["none","Без учёта"],["iiko","Posiflora (по запросу)"]];
   const left=`<div class="bcol">
    <div class="bstep"><div class="bnum">1</div><div class="bbody"><h3>Анкета</h3>
      <label class="blab">Название</label><input class="binp" id="bName" maxlength="24" value="${(cfg.name||'').replace(/"/g,'&quot;')}" placeholder="Например, «Утро»">
