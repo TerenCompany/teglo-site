@@ -7,7 +7,7 @@
 ## Установка на сервер (один раз, под root)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/TerenCompany/teglo-site/main/deploy/setup.sh | bash
+bash <(curl -fsSL https://raw.githubusercontent.com/TerenCompany/teglo-site/main/deploy/setup.sh)
 ```
 
 Скрипт спросит токен бота (ввод скрыт), Telegram ID для заявок и домен. Секреты хранятся только в `/opt/teglo/.env` на сервере (права 600), в репозиторий не попадают.

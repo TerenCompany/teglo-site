@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Teglo — разовая установка лендинга, демо и бота на сервер.
-# Запуск (под root):  curl -fsSL https://raw.githubusercontent.com/TerenCompany/teglo-site/main/deploy/setup.sh | bash
+# Запуск (под root):  bash <(curl -fsSL https://raw.githubusercontent.com/TerenCompany/teglo-site/main/deploy/setup.sh)
 # Повторный запуск безопасен: обновит код и настройки (например, когда появится домен).
 set -euo pipefail
 
@@ -10,7 +10,7 @@ say() { printf '\n\033[1;32m==> %s\033[0m\n' "$*"; }
 warn() { printf '\n\033[1;33m!!  %s\033[0m\n' "$*"; }
 
 [ "$(id -u)" -eq 0 ] || { echo "Запустите под root (sudo -i)"; exit 1; }
-exec </dev/tty   # чтобы вопросы работали и при запуске через curl | bash
+TTY=/dev/tty  # вопросы читаем с терминала — работает и при curl | bash
 
 say "1/6 Проверяю Docker и git"
 if ! command -v docker >/dev/null; then
@@ -29,11 +29,11 @@ get() { grep -E "^$1=" .env | cut -d= -f2- || true; }
 setv() { grep -vE "^$1=" .env > .env.tmp || true; echo "$1=$2" >> .env.tmp; mv .env.tmp .env; chmod 600 .env; }
 
 TOKEN="$(get BOT_TOKEN)"
-if [ -z "$TOKEN" ]; then read -rsp "Токен бота @tegloru_bot (ввод скрыт): " TOKEN; echo; setv BOT_TOKEN "$TOKEN"; fi
+if [ -z "$TOKEN" ]; then read -rsp "Токен бота @tegloru_bot (ввод скрыт): " TOKEN <"$TTY"; echo; setv BOT_TOKEN "$TOKEN"; fi
 OWNER="$(get OWNER_ID)"
-if [ -z "$OWNER" ]; then read -rp "Ваш Telegram ID (куда слать заявки): " OWNER; setv OWNER_ID "$OWNER"; fi
+if [ -z "$OWNER" ]; then read -rp "Ваш Telegram ID (куда слать заявки): " OWNER <"$TTY"; setv OWNER_ID "$OWNER"; fi
 DOMAIN="$(get DOMAIN)"
-read -rp "Домен сайта [${DOMAIN:-пока нет — Enter}]: " D_IN
+read -rp "Домен сайта [${DOMAIN:-пока нет — Enter}]: " D_IN <"$TTY"
 DOMAIN="${D_IN:-$DOMAIN}"; setv DOMAIN "$DOMAIN"
 if [ -n "$DOMAIN" ]; then setv SITE_URL "https://$DOMAIN"; else setv SITE_URL ""; fi
 
