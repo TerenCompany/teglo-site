@@ -1,0 +1,31 @@
+<style>
+body{margin:0;font:14px/1.35 -apple-system,system-ui,sans-serif;color:var(--tg-theme-text-color,#111)}
+.c{padding:12px 14px}
+.g{display:inline-block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--a);padding:3px 8px;border-radius:99px}
+.t{font-weight:700;font-size:16px;margin:8px 0 10px}
+.s{display:flex;gap:6px}
+.s div{flex:1;font-size:11px;opacity:.45;transition:opacity .5s}
+.s i{display:block;width:10px;height:10px;border-radius:50%;background:rgba(127,127,127,.4);margin:0 0 5px 1px;transition:background .5s,transform .5s}
+.s .on{opacity:1;font-weight:600}
+.s .on i{background:var(--a);transform:scale(1.3)}
+.b{height:4px;border-radius:4px;background:rgba(127,127,127,.22);margin:10px 0}
+.b i{display:block;height:4px;border-radius:4px;background:var(--a);transition:width 1s ease}
+.l{font-size:13px;opacity:.7}
+.d{font-size:13px;font-weight:600;color:#1f9a55;opacity:0;max-height:0;overflow:hidden;transition:opacity .6s,max-height .6s,margin .6s}
+.d.on{opacity:1;max-height:40px;margin-top:8px}
+button{margin-top:10px;width:100%;border:0;border-radius:10px;padding:10px;font:600 13px system-ui,sans-serif;background:var(--a);color:#fff}
+button.ok{background:rgba(127,127,127,.18);color:var(--tg-theme-text-color,#111)}
+</style>
+<div class="c" id="c"><span class="g" id="g"></span><div class="t" id="t"></div><div class="s" id="s"></div><div class="b"><i id="bar"></i></div><div class="l" id="l"></div><div class="d" id="d"></div><button id="btn"></button></div>
+<script>
+var W=window.TelegramWidget||{chatData:null,onEvent:function(){}},$=function(i){return document.getElementById(i)},built=0;
+function r(){var d={};try{d=JSON.parse(W.chatData)||{}}catch(e){}
+var k=d.k||0,st=d.s||[];$('c').style.setProperty('--a',d.a||'#2AABEE');
+$('g').textContent=d.g||'';$('t').textContent=d.t||'';$('l').textContent=d.l||'';$('d').textContent='✓ '+(d.d||'');
+if(!built&&st.length){built=1;st.forEach(function(x){var e=document.createElement('div'),i=document.createElement('i');e.appendChild(i);e.appendChild(document.createTextNode(x));$('s').appendChild(e)})}
+var ch=$('s').children;for(var j=0;j<ch.length;j++)ch[j].className=j<=k?'on':'';
+$('bar').style.width=[20,55,100][Math.min(k,2)]+'%';$('d').className=k>=2?'d on':'d';
+if(!$('btn').dataset.done)$('btn').textContent=d.b||'OK';if(W.ready)W.ready()}
+$('btn').onclick=function(){var b=$('btn');b.dataset.done=1;b.className='ok';b.textContent='✓ '+(JSON.parse(W.chatData||'{}').bd||'Готово')};
+W.onEvent('chatDataChanged',r);r();
+</script>

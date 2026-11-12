@@ -12,8 +12,12 @@
   SITE_URL   — адрес сайта с демо, например https://teglo.ru (необязательно)
 """
 import asyncio
+import json
 import logging
 import os
+from pathlib import Path
+
+import aiohttp
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
@@ -38,6 +42,8 @@ log = logging.getLogger("teglo")
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 OWNER_ID = int(os.environ["OWNER_ID"])
 SITE_URL = os.environ.get("SITE_URL", "").rstrip("/")
+API = f"https://api.telegram.org/bot{BOT_TOKEN}"
+WIDGETS = {p.stem: p.read_text("utf-8") for p in (Path(__file__).parent / "widgets").glob("*.html")}
 
 # ---------------------------------------------------------------- демо-данные
 NICHES = {
@@ -56,6 +62,9 @@ NICHES = {
         "live_done": "Заберите у стойки — баллы уже на карте: +48",
         "live_src": "В «Старте» статус ставит бариста кнопкой, в «Основе» — приходит из iiko.",
         "dice": "🎰",
+        "color": "#A0522D", "color2": "#E9DCCB",
+        "wheel": ["Раф", "+50", "Круассан", "×2 баллы", "Эспрессо", "+100"],
+        "btn": "Я подхожу", "btn_done": "Бариста видит, что вы идёте",
         "prizes": ["раф в подарок", "+50 баллов", "круассан", "двойные баллы до воскресенья"],
         "push": "Давно не виделись 👋 Ваш капучино ждёт: до воскресенья — двойные баллы.",
         "summary": (
@@ -88,6 +97,9 @@ NICHES = {
         "live_done": "XL отложен на 15 минут — оплатите по ссылке",
         "live_src": "Наличие и размеры — из МойСклад.",
         "dice": "🎯",
+        "color": "#111111", "color2": "#D9D9D2",
+        "wheel": ["−15%", "Доставка 0 ₽", "+300", "Ранний доступ", "−10%", "Стикерпак"],
+        "btn": "Отложить XL", "btn_done": "XL отложен на 15 минут",
         "prizes": ["−15% на дроп 05", "бесплатная доставка", "+300 баллов", "ранний доступ на сутки"],
         "push": "Дроп 05 через 3 дня. У вас ранний доступ — завтра в 12:00 пришлём ссылку.",
         "summary": (
@@ -120,6 +132,9 @@ NICHES = {
         "live_done": "Курьер получил: позвонит за 5 минут",
         "live_src": "Статус ставят флорист и курьер кнопками в рабочем чате.",
         "dice": "🎲",
+        "color": "#C2185B", "color2": "#F8D7DF",
+        "wheel": ["−10%", "Открытка", "+100", "Мимоза", "−15%", "Доставка 0 ₽"],
+        "btn": "Позвонить курьеру", "btn_done": "Курьер позвонит за 5 минут",
         "prizes": ["−10% на букет", "открытка в подарок", "+100 баллов", "доставка 0 ₽"],
         "push": "Через 3 дня день рождения мамы 🌸 Собрать её любимые пионы к 13:00?",
         "summary": (
@@ -184,8 +199,8 @@ def guest_menu(key: str) -> InlineKeyboardMarkup:
     n = NICHES[key]
     rows = [
         [InlineKeyboardButton(text=f"📋 {n['menu_title']}", callback_data=f"gm:{key}"),
-         InlineKeyboardButton(text="⏱ Живой статус", callback_data=f"gl:{key}")],
-        [InlineKeyboardButton(text=f"{n['dice']} Игра", callback_data=f"gg:{key}"),
+         InlineKeyboardButton(text="⏱ Живой виджет", callback_data=f"gl:{key}")],
+        [InlineKeyboardButton(text="🎡 Игра в чате", callback_data=f"gg:{key}"),
          InlineKeyboardButton(text="✉️ Рассылка", callback_data=f"gp:{key}")],
         [InlineKeyboardButton(text="⭐ Оценить визит", callback_data=f"gr:{key}")],
     ]
@@ -249,6 +264,34 @@ def live_text(n: dict, step: int) -> str:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------- HTML-виджеты (Bot API 10.4)
+async def tg_raw(method: str, payload: dict) -> dict:
+    """Прямой вызов Bot API — aiogram пока не знает методов виджетов."""
+    async with aiohttp.ClientSession() as s:
+        async with s.post(f"{API}/{method}", json=payload, timeout=aiohttp.ClientTimeout(total=15)) as r:
+            j = await r.json()
+    if not j.get("ok"):
+        raise RuntimeError(f"{method}: {j.get('description')}")
+    return j["result"]
+
+
+async def send_widget(chat_id: int, name: str, data: dict, caption: str) -> int:
+    res = await tg_raw("sendWidget", {
+        "chat_id": chat_id,
+        "html": WIDGETS[name],
+        "chat_data": json.dumps(data, ensure_ascii=False),
+        "caption": caption,
+    })
+    return res["message_id"]
+
+
+async def edit_widget(chat_id: int, message_id: int, data: dict):
+    await tg_raw("editMessageWidgetData", {
+        "chat_id": chat_id, "message_id": message_id,
+        "chat_data": json.dumps(data, ensure_ascii=False),
+    })
+
+
 # ---------------------------------------------------------------- роутинг
 dp = Dispatcher(storage=MemoryStorage())
 
@@ -308,6 +351,22 @@ async def guest_live(c: CallbackQuery):
     key = c.data.split(":")[1]
     n = NICHES[key]
     await c.answer("Смотрите — сообщение обновится само")
+    chat = c.message.chat.id
+    data = {"g": f"виджет · {n['brand']}", "t": n["live_title"], "s": n["live_steps"], "k": 0,
+            "l": n["live_lines"], "d": n["live_done"], "a": n["color"], "b": n["btn"], "bd": n["btn_done"]}
+    try:
+        mid = await send_widget(chat, "status", data,
+                                f"{n['live_title']} — живой виджет: обновляется сам, без новых сообщений")
+        for step in (1, 2):
+            await asyncio.sleep(2.5)
+            data["k"] = step
+            await edit_widget(chat, mid, data)
+        await c.message.answer(
+            f"☝️ Это <b>HTML-виджет</b> — новинка Telegram (ноябрь 2026). Статус меняется внутри одного "
+            f"сообщения, кнопка работает прямо в чате.\n<i>{n['live_src']}</i>", reply_markup=back(key))
+        return
+    except Exception as e:
+        log.warning("widget unavailable, fallback to text: %s", e)
     msg = await c.message.answer(live_text(n, 0))
     for step in (1, 2):
         await asyncio.sleep(2.5)
@@ -323,6 +382,16 @@ async def guest_game(c: CallbackQuery):
     key = c.data.split(":")[1]
     n = NICHES[key]
     await c.answer()
+    try:
+        await send_widget(c.message.chat.id, "wheel",
+                          {"t": f"Колесо призов · {n['brand']}", "p": n["wheel"], "a": n["color"], "b": n["color2"]},
+                          f"Колесо призов {n['brand']} — крутите прямо в сообщении")
+        await c.message.answer(
+            "☝️ Игра живёт прямо в сообщении — без перехода в приложение. Призы и шансы задаёт владелец. "
+            "Игры — модуль после запуска, тариф «Про».", reply_markup=back(key))
+        return
+    except Exception as e:
+        log.warning("widget unavailable, fallback to dice: %s", e)
     d = await c.message.answer_dice(emoji=n["dice"])
     await asyncio.sleep(3.5)
     prize = n["prizes"][d.dice.value % len(n["prizes"])]

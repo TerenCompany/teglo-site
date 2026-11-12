@@ -340,6 +340,18 @@ body.appv .tg-bottom{position:fixed;left:0;right:0;bottom:0;z-index:5;padding-bo
 .av-row{display:flex;gap:6px}
 .av-row button{flex:1;border:0;border-radius:10px;padding:8px 4px;font:600 12.5px "Inter Tight",sans-serif;background:#232E3C;color:#cfd8e3;cursor:pointer}
 .av-row button.on{background:#2AABEE;color:#fff}
+
+.tabblk{display:contents}
+.tabblk[hidden]{display:none}
+.tg-bottom [data-tabbtn]{cursor:pointer}
+body.appv .tg-bottom [data-tabbtn].on{background:#2AABEE;color:#fff}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat-it{position:relative;display:flex;flex-direction:column;gap:3px;font-size:13px}
+.cat-it .ph{aspect-ratio:1;border-radius:14px;margin-bottom:4px}
+.cat-it span{color:var(--b-muted)}
+.cat-add{position:absolute;right:8px;top:8px;width:30px;height:30px;border-radius:50%;border:0;background:var(--b-dark);color:#fff;font:700 16px/1 sans-serif;cursor:pointer}
+.cart-bar{display:flex;justify-content:space-between;align-items:center;color:var(--b-muted)}
+.cart-bar.on{background:var(--b-dark);color:#fff}
 </style></head>
 <body>
 <header class="bar">
@@ -615,6 +627,7 @@ let mode=["guest","admin","mods"].includes(qs.get("m"))?qs.get("m"):"guest";
 let tier=+qs.get("t")||2;
 let modFx=null, prevTab="fx";
 const APPV=qs.get("view")==="app";
+let appTab="card";
 if(APPV){document.body.classList.add("appv");mode="guest";if(!qs.get("t"))tier=3;}
 const C=()=>N[niche];
 
@@ -699,28 +712,34 @@ function renderGuest(){
     </div>
   </div>`;
 
-  const b=[];
-  b.push(`<div class="w gcard" style="position:relative"><div class="holo"></div><div class="top"><span class="brand">${c.brand}</span><span class="lvl">${tier>=2?k.level:'карта гостя'}</span></div><div class="qr">${qrSVG(niche.length*977)}</div><div class="code">${k.code}</div><div class="bal"><span class="mono" style="opacity:.75">${k.unit}</span><b>${k.bal}</b></div></div>`);
-  b.push(wrapLock(`<h4>Новое в Telegram <small>HTML-виджет</small></h4>${bubbleHTML(c)}`,2));
-  if(k.stampsTotal) b.push(`<div class="w"><h4>${k.stampLabel}</h4><div class="stamps">${Array.from({length:k.stampsTotal},(_,i)=>`<i class="${i<k.stamps?'on':''} ${i===k.stampsTotal-1?'gift':''}"></i>`).join('')}</div></div>`);
-  b.push(`<div class="w"><h4>${c.catalogTitle}</h4><div class="list">${c.catalog.map(i=>`<div class="li"><span style="color:var(--b-text)">${i[0]}</span><b>${i[1]}</b></div>`).join('')}</div></div>`);
-  b.push(`<div class="w"><h4>Как вам у нас?</h4><div class="stars"><i></i><i></i><i></i><i></i><i class="e"></i></div><div class="li"><span>4–5★ — предложим отзыв на Яндекс Картах и в 2ГИС</span></div></div>`);
-  b.push(wrapLock(`<h4>Уровень <small>до «${k.nextLvl}» 3 визита</small></h4><div class="prog"><i style="width:72%"></i></div>`,2));
-  c.extrasGuest.forEach(e=>b.push(wrapLock(e.html,e.t)));
-  b.push(wrapLock(`<h4>Достижения <small>3 из 6</small></h4><div class="ach">${c.ach.map(a=>`<div class="${a[2]?'':'off'}">${icon(IC[a[0]],'var(--b-acc)')}${a[1]}</div>`).join('')}</div>`,2));
-  b.push(wrapLock(`<h4>Сообщения от ${c.brand} <small>рассылки и триггеры</small></h4><div class="list">${c.msgs.map((m,i)=>`<div class="msg">${m}<time>${i?'вчера':'сегодня, 12:04'}</time></div>`).join('')}</div>`,2));
-  b.push(wrapLock(`<h4>Карта в Wallet <small>скоро</small></h4><div class="li"><span>Карта на экране блокировки iPhone</span><span class="pill">+ Wallet</span></div>`,2));
-  b.push(wrapLock(gameHTML(c.game),3));
-  b.push(wrapLock(`<h4>${c.game2[0]} <span class="game-tag">после запуска</span></h4><div class="li"><span>${c.game2[1]}</span></div>`,3));
-  b.push(wrapLock(`<h4>Твой год с ${c.brand}</h4><div class="list">${c.recap.map(r=>`<div class="li"><b class="big" style="font-size:22px">${r[0]}</b><span>${r[1]}</span></div>`).join('')}</div>`,3));
+  const b=[], T=(tab,h)=>b.push(`<div class="tabblk" data-tab="${tab}">${h}</div>`);
+  T("card",`<div class="w gcard" style="position:relative"><div class="holo"></div><div class="top"><span class="brand">${c.brand}</span><span class="lvl">${tier>=2?k.level:'карта гостя'}</span></div><div class="qr">${qrSVG(niche.length*977)}</div><div class="code">${k.code}</div><div class="bal"><span class="mono" style="opacity:.75">${k.unit}</span><b>${k.bal}</b></div></div>`);
+  T("card",wrapLock(`<h4>Новое в Telegram <small>HTML-виджет</small></h4>${bubbleHTML(c)}`,2));
+  if(k.stampsTotal) T("card",`<div class="w"><h4>${k.stampLabel}</h4><div class="stamps">${Array.from({length:k.stampsTotal},(_,i)=>`<i class="${i<k.stamps?'on':''} ${i===k.stampsTotal-1?'gift':''}"></i>`).join('')}</div></div>`);
+  T("card",wrapLock(`<h4>Уровень <small>до «${k.nextLvl}» 3 визита</small></h4><div class="prog"><i style="width:72%"></i></div>`,2));
+  T("card",wrapLock(`<h4>Достижения <small>3 из 6</small></h4><div class="ach">${c.ach.map(a=>`<div class="${a[2]?'':'off'}">${icon(IC[a[0]],'var(--b-acc)')}${a[1]}</div>`).join('')}</div>`,2));
+  T("card",wrapLock(gameHTML(c.game),3));
+  T("card",wrapLock(`<h4>${c.game2[0]} <span class="game-tag">после запуска</span></h4><div class="li"><span>${c.game2[1]}</span></div>`,3));
+  T("card",wrapLock(`<h4>Карта в Wallet <small>скоро</small></h4><div class="li"><span>Карта на экране блокировки iPhone</span><span class="pill">+ Wallet</span></div>`,2));
+  T("catalog",`<div class="w"><h4>${c.itemsTitle}</h4><div class="cat-grid">${c.items.map(i=>`<div class="cat-it"><div class="ph" style="background:${i[2]}"></div><b>${i[0]}</b><span>${i[1]}</span><button class="cat-add" data-add="${i[0]}">+</button></div>`).join('')}</div></div>`);
+  T("catalog",`<div class="w"><h4>${c.catalogTitle}</h4><div class="list">${c.catalog.map(i=>`<div class="li"><span style="color:var(--b-text)">${i[0]}</span><b>${i[1]}</b></div>`).join('')}</div></div>`);
+  T("catalog",`<div class="w cart-bar" data-cart><span>Корзина пуста</span><b></b></div>`);
+  T("profile",`<div class="w"><h4>Профиль</h4><div class="li"><span>Имя</span><b>Гость</b></div><div class="li" style="margin-top:6px"><span>Уведомления в Telegram</span><i class="tgl"></i></div><div class="li" style="margin-top:6px"><span>Рассылки об акциях (согласие)</span><i class="tgl"></i></div></div>`);
+  c.extrasGuest.forEach(e=>T("profile",wrapLock(e.html,e.t)));
+  T("profile",wrapLock(`<h4>Сообщения от ${c.brand} <small>рассылки и триггеры</small></h4><div class="list">${c.msgs.map((m,i)=>`<div class="msg">${m}<time>${i?'вчера':'сегодня, 12:04'}</time></div>`).join('')}</div>`,2));
+  T("profile",`<div class="w"><h4>Как вам у нас?</h4><div class="stars"><i></i><i></i><i></i><i></i><i class="e"></i></div><div class="li"><span>4–5★ — предложим отзыв на Яндекс Картах и в 2ГИС</span></div></div>`);
+  T("profile",wrapLock(`<h4>Твой год с ${c.brand}</h4><div class="list">${c.recap.map(r=>`<div class="li"><b class="big" style="font-size:22px">${r[0]}</b><span>${r[1]}</span></div>`).join('')}</div>`,3));
 
   const sw=APPV?`<div class="av-sw"><div class="av-row">${[["zerno","☕ Кофейня"],["dakai","👕 Бренд"],["pion","💐 Цветы"]].map(x=>`<button data-avn="${x[0]}" class="${x[0]===niche?'on':''}">${x[1]}</button>`).join('')}</div><div class="av-row">${[1,2,3].map(t=>`<button data-avt="${t}" class="${t===tier?'on':''}">${TIERS[t][0]}</button>`).join('')}</div></div>`:'';
   const phone=`<div class="phone"><div class="scr">${sw}
     <div class="tg-top"><div class="av" style="background:var(--b-acc)">${c.brand[0].toUpperCase()}</div><div><b>${c.brand}</b><span>бот · ${c.bot}</span></div></div>
     <div class="app">${b.join('')}</div>
-    <div class="tg-bottom"><div>Карта</div><div>${niche==='zerno'?'Меню':'Каталог'}</div><div>Профиль</div></div></div></div>`;
+    <div class="tg-bottom">${[["card","Карта"],["catalog",niche==='zerno'?'Меню':'Каталог'],["profile","Профиль"]].map(x=>`<div data-tabbtn="${x[0]}" class="${APPV&&appTab===x[0]?'on':''}">${x[1]}</div>`).join('')}</div></div></div>`;
   const v=document.getElementById("guestView"); v.innerHTML=(APPV?"":site)+phone;
   v.querySelectorAll("[data-avn]").forEach(b=>b.onclick=()=>{niche=b.dataset.avn;render()});
+  if(APPV){v.querySelectorAll(".tabblk").forEach(x=>x.hidden=x.dataset.tab!==appTab);
+    v.querySelectorAll("[data-tabbtn]").forEach(x=>x.onclick=()=>{appTab=x.dataset.tabbtn;render();scrollTo(0,0)});}
+  const cart=[];v.querySelectorAll("[data-add]").forEach(x=>x.onclick=()=>{cart.push(x.dataset.add);x.textContent="✓";const bar=v.querySelector("[data-cart]");bar.classList.add("on");bar.querySelector("span").textContent=`В корзине: ${cart.length}`;bar.querySelector("b").textContent="Оформить →";try{Telegram.WebApp.HapticFeedback.impactOccurred("light")}catch(e){}});
   v.querySelectorAll("[data-avt]").forEach(b=>b.onclick=()=>{tier=+b.dataset.avt;render()}); fxStart(v); if(tier>=3) gameStart(v); if(tier>=2) bubbleStart(v);
 }
 

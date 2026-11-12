@@ -1,0 +1,25 @@
+<style>
+body{margin:0;font:14px/1.3 -apple-system,system-ui,sans-serif;color:var(--tg-theme-text-color,#111);text-align:center}
+.c{padding:12px 14px}
+.t{font-weight:700;font-size:16px;margin-bottom:8px}
+.w{position:relative;width:220px;height:220px;margin:0 auto}
+#g{transition:transform 3.2s cubic-bezier(.17,.67,.15,1);transform-origin:110px 110px}
+.p{position:absolute;left:101px;top:-2px;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid var(--tg-theme-text-color,#111)}
+button{margin-top:10px;width:100%;border:0;border-radius:10px;padding:10px;font:600 13px system-ui,sans-serif;background:var(--a);color:#fff}
+.r{font-weight:700;margin-top:8px;min-height:18px}
+</style>
+<div class="c" id="c"><div class="t" id="t"></div><div class="w"><svg width="220" height="220" viewBox="0 0 220 220"><g id="g"></g></svg><div class="p"></div></div><div class="r" id="r"></div><button id="btn">Крутить</button></div>
+<script>
+var W=window.TelegramWidget||{chatData:null,onEvent:function(){}},$=function(i){return document.getElementById(i)},d={},rot=0,busy=0,NS='http://www.w3.org/2000/svg';
+function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e}
+function draw(){try{d=JSON.parse(W.chatData)||{}}catch(e){}var p=d.p||['?','?'],n=p.length,a=d.a||'#2AABEE',g=$('g');
+$('c').style.setProperty('--a',a);$('t').textContent=d.t||'';while(g.firstChild)g.removeChild(g.firstChild);
+for(var i=0;i<n;i++){var a0=(i/n*360-90)*Math.PI/180,a1=((i+1)/n*360-90)*Math.PI/180,am=((i+.5)/n*360-90)*Math.PI/180;
+g.appendChild(el('path',{d:'M110 110L'+(110+104*Math.cos(a0))+' '+(110+104*Math.sin(a0))+'A104 104 0 0 1 '+(110+104*Math.cos(a1))+' '+(110+104*Math.sin(a1))+'Z',fill:i%2?(d.b||'#eee'):a}));
+var x=110+66*Math.cos(am),y=110+66*Math.sin(am),t=el('text',{x:x,y:y,'text-anchor':'middle','dominant-baseline':'middle','font-size':'11','font-weight':'700',fill:i%2?'#222':'#fff',transform:'rotate('+((i+.5)/n*360)+' '+x+' '+y+')'});t.textContent=p[i];g.appendChild(t)}
+g.appendChild(el('circle',{cx:110,cy:110,r:14,fill:'#222'}));if(W.ready)W.ready()}
+$('btn').onclick=function(){if(busy)return;busy=1;var p=d.p||['?'],n=p.length,k=Math.floor(Math.random()*n);
+rot+=1800+(360-(k+.5)*360/n)-(rot%360);$('g').style.transform='rotate('+rot+'deg)';$('r').textContent='';
+setTimeout(function(){$('r').textContent='🎉 '+p[k];busy=0;try{W.HapticFeedback.notificationOccurred('success')}catch(e){}},3300)};
+W.onEvent('chatDataChanged',draw);draw();
+</script>
