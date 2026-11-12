@@ -73,8 +73,12 @@ $DOMAIN, www.$DOMAIN {
 add_block() { # $1 = путь к Caddyfile на хосте, $2 = upstream
   local f="$1" up="$2"
   cp "$f" "$f.bak-teglo-$(date +%s)"
-  sed -i '/# teglo-begin/,/# teglo-end/d' "$f"
-  printf '\n%s\n' "${BLOCK/UPSTREAM/$up}" >> "$f"
+  # пишем «на месте» (cat >), а не sed -i: иначе у файла меняется inode и
+  # Caddy в Docker продолжает видеть старую версию смонтированного файла
+  local tmp; tmp="$(mktemp)"
+  sed '/# teglo-begin/,/# teglo-end/d' "$f" > "$tmp"
+  printf '\n%s\n' "${BLOCK/UPSTREAM/$up}" >> "$tmp"
+  cat "$tmp" > "$f"; rm -f "$tmp"
 }
 
 case "$MODE" in
