@@ -399,6 +399,20 @@ body.appv .bmods{grid-template-columns:1fr}
 body.appv .bstep{padding:16px;gap:10px}
 .bview{margin-top:10px;background:#2AABEE!important}
 body.appv .av-sw{position:static}
+
+.roi-top{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:6px 0 14px}
+.roi-top>div{background:rgba(198,244,50,.07);border:1px solid rgba(198,244,50,.25);border-radius:16px;padding:14px}
+.roi-top b{display:block;font-size:28px;letter-spacing:-.02em;margin-top:4px}
+.roi-top>div:first-child b{color:var(--svoy)}
+.mod.eff{cursor:default}
+.m-metric{font-size:12.5px;color:var(--svoy);margin:6px 0 2px}
+.bm-metric{color:var(--svoy)!important;font-size:11.5px!important}
+.beff{display:grid;gap:6px}
+.beff>div{display:grid;grid-template-columns:1fr auto;gap:2px 10px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;opacity:.6}
+.beff>div.on{opacity:1;border-style:solid;border-color:rgba(198,244,50,.4)}
+.beff b{font-size:13.5px}.beff span{grid-column:1;font-size:12px;color:var(--muted)}
+.beff em{grid-row:1/3;grid-column:2;align-self:center;font:500 10px "JetBrains Mono",monospace;font-style:normal;text-transform:uppercase;color:var(--muted)}
+@media (max-width:640px){.roi-top{grid-template-columns:1fr}}
 </style></head>
 <body>
 <header class="bar">
@@ -556,6 +570,13 @@ zerno:{
   bubble:{title:"Ваш заказ · №214", steps:["Принят","Готовим","Готов к выдаче"], lines:["Капучино 350 мл","Круассан"], btns:["Я подхожу","Изменить"], done:"Бариста видит: вы будете через 3 мин"},
   game:{kind:"wheel", title:"Колесо призов", sub:"после 5-го визита", prizes:["Раф","+50","Круассан","×2 баллы","Эспрессо","+100"]},
   game2:["Коллекция напитков","Попробуйте 6 напитков из меню — седьмой в подарок. Собрано 4 из 6."],
+  eff:[["Возврат «уснувших» по личному ритму","Гость ходил раз в 4 дня и пропал на 10 — бот пишет сам, с подарком.","вернулось гостей и их выручка",2,"118 писем → вернулись 37 (без писем — 9%)",21400],
+       ["Загрузка пустых часов","Тепловая карта находит провалы — акция только на эти часы и только нужным гостям.","чеки в провальные часы",3,"15:00–17:00: +64 чека",16900],
+       ["Допродажа в предзаказе","«К рафу часто берут сырник» — одна подсказка перед оплатой.","средний чек предзаказа",2,"+31 ₽ к чеку предзаказа",7800],
+       ["Кофейный абонемент","14 чашек по фиксированной цене: деньги вперёд и привычка.","предоплата и частота",3,"продано 23 абонемента · частота ×1,6",null],
+       ["Оценка с причиной + сигнал владельцу","1–3★ сразу владельцу с причиной, 4–5★ — на Яндекс Карты.","рейтинг на картах, перехваченный негатив",1,"перехвачено 7 негативных · 4,7 → 4,8★",null],
+       ["«Подарить кофе другу» по ссылке","Гость дарит напиток ссылкой — друг приходит и сам становится гостем.","новые гости, цена нового гостя",3,"19 новых гостей · 210 ₽ за гостя",6100],
+       ["Антифрод подарков","Подарок на ДР — один на всю сеть, без повторов по точкам.","сэкономленные подарки",2,"заблокировано 14 повторов",3100]],
   ach:[["cup","Первая чашка",1],["fire","Серия 4 недели",1],["moon","Ночная сова",0],["sun","Ранняя пташка",1],["star","Дегустатор",0],["gift","День рождения",0]],
   msgs:["Давно не виделись 👋 Ваш капучино ждёт: до воскресенья — двойные баллы.","Сегодня день рождения у «Зерна» — раф за полцены по карте."],
   recap:[["86","капучино за год"],["Раф лаванда","любимый напиток"],["9:10","ваше время"]],
@@ -601,6 +622,13 @@ dakai:{
   bubble:{title:"Дроп 05 · Худи «Ветер»", steps:["Ранний доступ","Открыт","Осталось 12 шт"], lines:["Размер: S · M · L · XL","6 900 ₽"], btns:["Отложить XL","В избранное"], done:"XL отложен на 15 минут — оплатите по ссылке в боте"},
   game:{kind:"scratch", title:"Скретч-карта дропа", sub:"сотри и забери", prize:"−15% на дроп 05"},
   game2:["Охота за кодом","В сторис бренда спрятан код — введите его в боте и получите ранний доступ."],
+  eff:[["Лист ожидания размера","«Сообщить, когда будет XL» — автоуведомление при поступлении на склад.","возвращённые продажи",2,"41 в листе → купили 17",117300],
+       ["Брошенная корзина","Напоминание через 3 часа и через сутки — с фото вещи.","% возвращённых заказов",2,"вернули 22% брошенных",64800],
+       ["Дроп: ранний доступ и предзаказ","Уровень «Свой» покупает на сутки раньше, остальные — в лист ожидания.","% распроданного и предоплата",2,"дроп 04 распродан за 2 дня",null],
+       ["Подбор размера + «маломерит»","3 вопроса и подсказка из отзывов — меньше возвратов.","% возвратов",3,"возвраты 14% → 9%",38000],
+       ["«С этим носят»","Комплект к вещи со скидкой за образ.","вещей в заказе",2,"1,3 → 1,6 вещи в заказе",42500],
+       ["Амбассадоры с личными кодами","Код блогера или клиента — видно продажи по каждому.","продажи по кодам",3,"6 кодов → 31 заказ",null],
+       ["«Что докупить» по остаткам","Что закончилось за 2 дня и что лежит мёртвым грузом.","дефицит и неликвид",3,"дефицит XL −60% в дропе 05",null]],
   ach:[["bag","Первый заказ",1],["fire","3 дропа подряд",1],["star","Коллекционер",0],["users","Привёл друга",1],["gift","День рождения",0],["heart","Отзыв с фото",0]],
   msgs:["Дроп 05 через 3 дня. У вас ранний доступ — завтра в 12:00 пришлём ссылку.","Худи «Ветер» в размере XL снова в наличии — отложили для вас на 24 часа."],
   recap:[["7","вещей за год"],["Худи","ваш тип вещей"],["4 из 5","дропов с вами"]],
@@ -648,6 +676,13 @@ pion:{
   bubble:{title:"Букет «Утро» для мамы", steps:["Собран","В пути","Доставлен"], lines:["Курьер Алексей · 13:20","Открытка: «С днём рождения!»"], btns:["Позвонить курьеру","Фото букета"], done:"Курьер получил: позвонит за 5 минут"},
   game:{kind:"advent", title:"Адвент к 8 Марта", sub:"окошко в день", prizes:["−10%","Открытка","+100","Мимоза","−15%","Доставка 0 ₽","+200","Тюльпан"]},
   game2:["Букет-сюрприз","Раз в месяц — букет на выбор флориста с секретным бонусом внутри."],
+  eff:[["Поводы из прошлых заказов","«Год назад вы дарили маме — собрать похожий к 14 декабря?»","повторные заказы в год",2,"напомнили 64 → заказали 29",113100],
+       ["Фото букета до отправки","Флорист шлёт фото — клиент жмёт «Отправляйте» или «Поправить».","жалобы и возвраты",2,"жалоб 6 → 1 в месяц",null],
+       ["Подписка на букеты","Дом или офис: свежий букет каждую неделю, оплата автоматически.","ежемесячная выручка",3,"74 подписки",177600],
+       ["Предпродажа к 14.02 и 8.03","Слоты и предоплата заранее — понятно, сколько закупать.","предоплата и план закупки",2,"к 8 марта: 212 заказов заранее",null],
+       ["Корпоративный кабинет","Офис заносит ДР сотрудников — букеты уходят сами.","выручка от компаний",3,"4 офиса · 38 сотрудников",31200],
+       ["Адрес уточняет получатель","Не знаете адрес — получатель заполнит сам по ссылке.","конверсия заказов в подарок",2,"+9% оформленных подарков",14400],
+       ["Видео-открытка по QR","Клиент записывает поздравление, на открытке QR.","средний чек",3,"+290 ₽ к чеку · взяли 18%",9800]],
   ach:[["flower","Первый букет",1],["heart","Не забыл маму",1],["gift","5 праздников",0],["clock","Подписчик",1],["star","Отзыв с фото",0],["users","Привёл друга",0]],
   msgs:["Через 3 дня день рождения мамы 🌸 Собрать её любимые пионы к 13:00?","Пятничный букет в пути, курьер будет в 13:20."],
   recap:[["14","букетов за год"],["Пионы","любимые цветы"],["0","забытых дат"]],
@@ -689,6 +724,7 @@ const BMODS=[
   ["games","Игры","колесо, скретч-карта, адвент",3],
   ["recap","Итоги года","«Твой год с нами» — как Spotify Wrapped",3],
   ["wow","Вау-дизайн","эффект на первом экране сайта",3]];
+const BMET={"points": "частота визитов", "reviews": "рейтинг на картах", "widgets": "меньше звонков «где заказ»", "levels": "удержание постоянных", "push": "вернувшиеся гости", "ach": "разнообразие заказов", "niche": "выручка ниши", "wallet": "частота визитов", "games": "повод вернуться", "recap": "виральность, новые гости", "wow": "время на сайте, заявки"};
 const SWATCH=["#A0522D","#111111","#C2185B","#2E7D32","#1565C0","#6A1B9A","#E65100","#00897B"];
 let cfg=null;
 function cfgReset(){const n=N[niche];cfg={name:n.brand,color:n.colors.acc,pos:niche==="zerno"?"iiko":"none",fx:n.fx,mods:new Set(["points","reviews","widgets","levels","push","ach","niche"])};}
@@ -816,6 +852,11 @@ function renderGuest(target="guestView",part="both"){
 function renderAdmin(){
   const a=C().admin,L=(h,n,c)=>wrapLock(h,n,c),o=[];
   a.kpi.forEach(k=>o.push(`<div class="card kpi c3"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="d">${k[2]}</div></div>`));
+  const ef=C().eff.filter(e=>e[3]<=tier), money=ef.reduce((a,e)=>a+(e[5]||0),0), price=+TIERS[tier][1].replace(/\D/g,"");
+  o.push(`<div class="card c12 roi"><h4>Что принёс Teglo за ноябрь <small>сравнение с контрольной группой: 10% гостей без акций</small></h4>
+    <div class="roi-top"><div><span class="mono">дополнительная выручка</span><b>+${money.toLocaleString("ru-RU")} ₽</b></div><div><span class="mono">подписка «${TIERS[tier][0]}»</span><b>${TIERS[tier][1].replace("/мес","")}</b></div><div><span class="mono">окупаемость</span><b>×${Math.max(1,Math.round(money/price))}</b></div></div>
+    <div class="a-list">${ef.map(e=>`<div class="a-li"><div><b style="font-weight:600">${e[0]}</b><br><span>${e[4]}</span></div><span class="tag ${e[5]?'ok':''}">${e[5]?'+'+e[5].toLocaleString("ru-RU")+' ₽':'📈 '+e[2]}</span></div>`).join('')}</div>
+    ${tier<3?`<div class="a-li" style="margin-top:10px;border:0"><span>В «${TIERS[tier+1][0]}» добавятся: ${C().eff.filter(e=>e[3]===tier+1).map(e=>e[0]).join(", ")}</span><span class="tag">апгрейд</span></div>`:''}</div>`);
   o.push(`<div class="card c6"><h4>Касса и начисления <small>${tier>=2&&!a.pos.manual?'интеграция':'свой учёт'}</small></h4><div class="a-li"><span>${tier>=2?a.pos.t2:a.pos.t1}</span><span class="tag ${tier>=2&&!a.pos.manual?'ok':''}">${tier>=2&&!a.pos.manual?'авто':'вручную'}</span></div>${tier<2?`<div class="a-li" style="margin-top:10px"><span>${a.pos.up||`В «Основе» — автоматически через ${a.pos.sys}`}</span><span class="tag">апгрейд</span></div>`:''}</div>`);
   o.push(`<div class="card c6"><h4>Отзывы <small>плохие — сразу вам</small></h4><div class="a-list">${a.reviews.map(r=>`<div class="a-li"><div><b style="font-weight:600">${r[0]}</b><br><span>${r[1]}</span></div><span class="tag ${r[2]}">${r[2]==='bad'?'в работу':'→ Яндекс Карты'}</span></div>`).join('')}</div></div>`);
   o.push(L(`<h4>Рассылка <small>только с согласием</small></h4><div class="chips" style="margin-bottom:10px">${a.segments.map((s,i)=>`<span class="tag ${i===1?'ok':''}">${s}</span>`).join('')}</div><div class="compose">${C().msgs[0]}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn">Отправить в Telegram</button><button class="btn g">Запланировать</button></div><div class="a-li" style="margin-top:12px;border:0"><span>Прошлая: открыли 64% · пришли по ней 23 гостя</span></div>`,2,"card c7"));
@@ -846,7 +887,8 @@ const MODS=[
 ];
 function renderMods(){
   const c=C();
-  const left=MODS.map(([cat,list])=>`<div class="mcat"><h3>${cat} <small>${list.length} модулей</small></h3><div class="mgrid">${list.map(m=>`<button class="mod" ${m[3]?`data-game="${m[3]}"`:''}><b>${m[0]}</b><p>${m[1]}</p><div class="t"><span class="tag ${tier>=m[2]?'ok':''}">${TIERS[m[2]][0]}${tier>=m[2]?' · в вашем тарифе':''}</span>${m[3]?'<span class="tag">смотреть →</span>':''}</div></button>`).join('')}</div></div>`).join('')
+  const effCat=`<div class="mcat"><h3>Модули, которые приносят деньги · ${({zerno:"кофейня",dakai:"бренд одежды",pion:"цветы"})[niche]} <small>что даёт → как меряем</small></h3><div class="mgrid">${C().eff.map(e=>`<div class="mod eff"><b>${e[0]}</b><p>${e[1]}</p><div class="m-metric">📈 ${e[2]}</div><div class="t"><span class="tag ${tier>=e[3]?'ok':''}">${TIERS[e[3]][0]}${tier>=e[3]?' · в вашем тарифе':''}</span><span class="tag">пример: ${e[4]}</span></div></div>`).join('')}</div></div>`;
+  const left=effCat+MODS.map(([cat,list])=>`<div class="mcat"><h3>${cat} <small>${list.length} модулей</small></h3><div class="mgrid">${list.map(m=>`<button class="mod" ${m[3]?`data-game="${m[3]}"`:''}><b>${m[0]}</b><p>${m[1]}</p><div class="t"><span class="tag ${tier>=m[2]?'ok':''}">${TIERS[m[2]][0]}${tier>=m[2]?' · в вашем тарифе':''}</span>${m[3]?'<span class="tag">смотреть →</span>':''}</div></button>`).join('')}</div></div>`).join('')
     +`<div class="mcat"><h3>Вау-эффекты <small>${FX.length} эффектов · в «Про» или +1 490 ₽</small></h3><div class="mgrid">${FX.map(f=>`<button class="mod" data-fx="${f[0]}"><b>${f[1]}</b><p>${f[2]}</p><div class="t"><span class="tag">смотреть →</span></div></button>`).join('')}</div></div>`;
   const right=`<div class="prev"><div class="tabs"><button data-ptab="fx" class="${prevTab==='fx'?'on':''}">Вау-эффекты</button><button data-ptab="game" class="${prevTab==='game'?'on':''}">Игры</button><button data-ptab="tg" class="${prevTab==='tg'?'on':''}">Виджеты Telegram</button></div><div id="pvBody"></div></div>`;
   document.getElementById("modsView").innerHTML=`<div>${left}</div>${right}`;
@@ -915,7 +957,8 @@ function renderBuild(){
      <label class="blab">Учёт и касса</label><div class="chips">${posOpts.map(x=>`<button class="chip ${x[0]===cfg.pos?'on':''}" data-bp="${x[0]}">${x[1]}</button>`).join('')}</div>
    </div></div>
    <div class="bstep"><div class="bnum">2</div><div class="bbody"><h3>Модули <small>${cfg.mods.size} включено</small></h3>
-     <div class="bmods">${BMODS.map(m=>`<button class="bmod ${cfg.mods.has(m[0])?'on':''}" data-bm="${m[0]}"><i class="tgl ${cfg.mods.has(m[0])?'':'off'}"></i><div><b>${m[1]}</b><span>${m[2]}</span></div><em>${TIERS[m[3]][0]}</em></button>`).join('')}</div>
+     <div class="bmods">${BMODS.map(m=>`<button class="bmod ${cfg.mods.has(m[0])?'on':''}" data-bm="${m[0]}"><i class="tgl ${cfg.mods.has(m[0])?'':'off'}"></i><div><b>${m[1]}</b><span>${m[2]}</span><span class="bm-metric">📈 ${BMET[m[0]]||""}</span></div><em>${TIERS[m[3]][0]}</em></button>`).join('')}</div>
+     <label class="blab">Модули, которые приносят деньги · ${({zerno:"кофейня",dakai:"бренд",pion:"цветы"})[niche]}</label><div class="beff">${n.eff.map(e=>`<div class="${e[3]<=cfgTier()?'on':''}"><b>${e[0]}</b><span>📈 ${e[2]}</span><em>${e[3]<=cfgTier()?'включено':TIERS[e[3]][0]}</em></div>`).join('')}</div>
      ${cfg.mods.has("wow")?`<label class="blab">Вау-эффект</label><div class="chips">${FX.map(f=>`<button class="chip ${f[0]===cfg.fx?'on':''}" data-bf="${f[0]}">${f[1]}</button>`).join('')}</div>`:''}
    </div></div>
    <div class="bstep"><div class="bnum">3</div><div class="bbody"><h3>Итог</h3>
