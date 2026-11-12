@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teglo — сайт, бот и карта гостя для вашего бизнеса</title>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0E0F12"><link rel="icon" href="/icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icons/icon-180.png">
+<meta name="description" content="Сайт, Telegram-бот и карта лояльности под ваш бренд за неделю. Данные в России, документы по 152-ФЗ включены.">
+<link href="/fonts/fonts.css" rel="stylesheet">
+<style>
+/* Teglo: тёмная уверенная витрина, один лаймовый акцент, крупный гротеск. Ритм — тёмные секции с карточками, одна светлая (тарифы). */
+:root{--bg:#0E0F12;--panel:#16181D;--panel2:#1D2027;--line:rgba(255,255,255,.09);--text:#F2F2EE;--muted:rgba(242,242,238,.62);--acc:#C6F432;--ink:#0E0F12;--light:#F2F1EC;--lmuted:#5E5D57;--lline:#DAD8D0;
+--font:"Inter Tight",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font:400 16px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase}
+.wrap{width:min(1200px,100% - 40px);margin:0 auto}
+h1,h2{font-weight:800;letter-spacing:-.045em;line-height:.98;text-wrap:balance}
+h2{font-size:clamp(34px,4.6vw,60px)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:15px 22px;border-radius:999px;font-weight:700;text-decoration:none;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.a{background:var(--acc);color:var(--ink)}
+.btn.o{border:1px solid var(--line)}
+nav.top{position:sticky;top:0;z-index:10;background:rgba(14,15,18,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav.top .wrap{display:flex;align-items:center;gap:24px;height:62px}
+.logo{font-weight:800;font-size:22px;letter-spacing:-.04em;text-decoration:none}
+.logo b{color:var(--acc)}
+nav.top .links{display:flex;gap:20px;color:var(--muted);font-size:14px}
+nav.top .links a{text-decoration:none}
+nav.top .sp{flex:1}
+nav.top .btn{padding:10px 16px}
+
+.hero{padding:80px 0 60px;position:relative;overflow:hidden}
+.hero h1{font-size:clamp(46px,7.4vw,104px);max-width:14ch}
+.hero h1 em{font-style:normal;color:var(--acc)}
+.hero p{font-size:19px;color:var(--muted);max-width:52ch;margin-top:22px}
+.hero .cta{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
+.hero .note{margin-top:16px;color:var(--muted);font-size:14px}
+.chipsrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:44px}
+.chipsrow span{border:1px solid var(--line);border-radius:999px;padding:8px 14px;color:var(--muted);font-size:14px}
+.glow{position:absolute;right:-180px;top:-120px;width:620px;height:620px;border-radius:50%;background:radial-gradient(circle,rgba(198,244,50,.22),transparent 65%);pointer-events:none}
+
+section{padding:90px 0}
+.head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:40px;flex-wrap:wrap}
+.head p{color:var(--muted);max-width:46ch}
+.pain{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px}
+.box b{display:block;font-size:20px;letter-spacing:-.02em;margin:10px 0 6px}
+.box p{color:var(--muted);font-size:15px}
+.num{font:500 13px var(--mono);color:var(--acc)}
+
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:s}
+.steps .box b{font-size:18px}
+
+.demos{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.demo{border-radius:22px;overflow:hidden;text-decoration:none;display:flex;flex-direction:column;border:1px solid var(--line);transition:transform .25s}
+.demo:hover{transform:translateY(-4px)}
+.demo .top{padding:26px;min-height:230px;position:relative;overflow:hidden}
+.demo .top .k{font:500 11.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;opacity:.75}
+.demo .top h3{font-size:34px;font-weight:800;letter-spacing:-.04em;line-height:1;margin-top:12px}
+.demo .top p{margin-top:10px;opacity:.75;max-width:30ch;font-size:15px}
+.demo .bot{background:var(--panel);padding:18px 26px;display:flex;justify-content:space-between;align-items:center;color:var(--text)}
+.demo .bot span{color:var(--muted);font-size:14px}
+.demo .ring{position:absolute;right:-50px;bottom:-60px;width:200px;height:200px;border-radius:50%;opacity:.35}
+
+.light{background:var(--light);color:var(--ink)}
+.light .head p{color:var(--lmuted)}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tier{background:#fff;border:1px solid var(--lline);border-radius:22px;padding:26px;display:flex;flex-direction:column}
+.tier.main{background:var(--ink);color:var(--text);border-color:var(--ink)}
+.tier .n{font:500 12px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--lmuted)}
+.tier.main .n{color:var(--acc)}
+.tier .p{font-size:40px;font-weight:800;letter-spacing:-.04em;margin-top:10px}
+.tier .p small{font-size:16px;font-weight:500;letter-spacing:0;opacity:.6}
+.tier .f{font-size:14px;margin-top:4px;color:#3E7B00;font-weight:600}
+.tier.main .f{color:var(--acc)}
+.tier ul{list-style:none;margin-top:18px;display:grid;gap:9px;font-size:15px;flex:1}
+.tier li{padding-left:22px;position:relative}
+.tier li::before{content:"";position:absolute;left:0;top:8px;width:12px;height:7px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);opacity:.8}
+.tier li.plus{opacity:.6}
+.tier .btn{margin-top:22px;justify-content:center}
+.tier:not(.main) .btn{background:var(--ink);color:var(--text)}
+.offer{margin-top:24px;background:var(--ink);color:var(--text);border-radius:22px;padding:28px;display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:center}
+.offer h3{font-size:30px;font-weight:800;letter-spacing:-.035em;line-height:1.05}
+.offer h3 em{font-style:normal;color:var(--acc)}
+.offer ul{list-style:none;display:grid;gap:8px;color:var(--muted)}
+.offer ul b{color:var(--text)}
+.small{font-size:13.5px;color:var(--lmuted);margin-top:14px}
+
+.law{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.law .box ul{list-style:none;margin-top:12px;display:grid;gap:8px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:14px 12px;border-bottom:1px solid var(--line)}
+th{font:500 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.y{color:var(--acc);font-weight:700}
+td.no{color:var(--muted)}
+tr.us td{background:rgba(198,244,50,.06)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px}
+
+.faq{display:grid;gap:10px;max-width:860px}
+details{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+summary{cursor:pointer;font-weight:700;font-size:17px;list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::after{content:"+";color:var(--acc);font-size:22px;line-height:1}
+details[open] summary::after{content:"–"}
+details p{color:var(--muted);margin-top:10px}
+
+.final{text-align:center;padding:110px 0}
+.final h2{max-width:16ch;margin:0 auto}
+.final p{color:var(--muted);margin:18px auto 30px;max-width:44ch}
+footer{border-top:1px solid var(--line);padding:30px 0;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+@media (max-width:900px){
+  nav.top .links{display:none}
+  .pain,.steps,.demos,.tiers,.law,.offer{grid-template-columns:1fr}
+  section{padding:64px 0}
+}
+</style>
+</head>
+<body>
+<nav class="top"><div class="wrap">
+  <a class="logo" href="#">teglo<b>.</b></a>
+  <div class="links"><a href="#demo">Примеры</a><a href="#price">Тарифы</a><a href="#law">152-ФЗ</a><a href="#faq">Вопросы</a></div>
+  <div class="sp"></div>
+  <a class="btn a tg" href="#" target="_blank" rel="noopener">Оставить заявку</a>
+</div></nav>
+
+<header class="hero"><div class="glow"></div><div class="wrap">
+  <div class="mono" style="color:var(--acc)">для кофеен, брендов одежды и цветочных</div>
+  <h1 style="margin-top:16px">Свои гости <em>возвращаются</em> сами</h1>
+  <p>Сайт, бот в Telegram и карта гостя под ваш бренд — за неделю. Баллы, рассылки, отзывы и аналитика в одном месте. Данные хранятся в России, документы по 152-ФЗ прописываем под ваши реквизиты.</p>
+  <div class="cta"><a class="btn a tg" href="#" target="_blank" rel="noopener">Оставить заявку в Telegram ↗</a><a class="btn o" href="#demo">Посмотреть примеры</a></div>
+  <div class="note">Первым 20 клиентам — цена основателя на год и запуск в подарок.</div>
+  <div class="chipsrow"><span>Сайт под бренд</span><span>Telegram-бот</span><span>Веб-приложение на экран «Домой»</span><span>Карта лояльности</span><span>Интеграция с iiko</span><span>Рассылки и триггеры</span><span>Документы по 152-ФЗ</span></div>
+</div></header>
+
+<section><div class="wrap">
+  <div class="head"><h2>Знакомо?</h2><p>Вернуть гостя дешевле, чем привлечь нового. Но возвращать нечем.</p></div>
+  <div class="pain">
+    <div class="box"><span class="num">01</span><b>Гость пришёл и пропал</b><p>Ни телефона, ни повода вернуться. Скидка «на следующий раз» забывается у кассы.</p></div>
+    <div class="box"><span class="num">02</span><b>Своё приложение — от 300 тыс. ₽</b><p>Студии берут от 300 тыс. ₽ за разработку — и отдельно за поддержку каждый месяц.</p></div>
+    <div class="box"><span class="num">03</span><b>Штраф за форму на сайте</b><p>Собирать телефоны гостей без оформленных согласий — штраф до 700 тыс. ₽ для компании.</p></div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <div class="head"><h2>Как мы запускаем</h2><p>Без дизайнеров, программистов и месяцев ожидания.</p></div>
+  <div class="steps">
+    <div class="box"><span class="num">01</span><b>Короткая анкета</b><p>10 минут: о бизнесе, логотип, цвета, что хотите.</p></div>
+    <div class="box"><span class="num">02</span><b>Демо за день</b><p>Собираем сайт, бота и карту на ваших данных — смотрите с телефона.</p></div>
+    <div class="box"><span class="num">03</span><b>Пара правок</b><p>Меняем тексты, цвета, механику баллов — до «да, это моё».</p></div>
+    <div class="box"><span class="num">04</span><b>Запуск</b><p>QR на кассу и столы, документы на сайте, обучение персонала за 15 минут.</p></div>
+  </div>
+</div></section>
+
+<section id="demo" style="padding-top:0"><div class="wrap">
+  <div class="head"><h2>Посмотрите вживую</h2><p>В каждом демо — режимы «Гость» и «Владелец» и три тарифа: видно, что добавляется на каждом.</p></div>
+  <div class="demos">
+    <a class="demo" href="demo.html?n=zerno" style="background:#F6F0E8;color:#2B1D14">
+      <div class="top"><span class="ring" style="background:#A0522D"></span><div class="k">кофейня · iiko</div><h3>Зерно</h3><p>Штампы «6-й в подарок», баллы через iiko, сводка владельцу каждый вечер.</p></div>
+      <div class="bot"><b>Открыть демо</b><span>→</span></div></a>
+    <a class="demo" href="demo.html?n=dakai" style="background:#EDEDE9;color:#111">
+      <div class="top"><span class="ring" style="background:#111"></span><div class="k">бренд одежды · дропы</div><h3>DAKAI</h3><p>Отсчёт до дропа, лист ожидания размеров, ранний доступ для своих.</p></div>
+      <div class="bot"><b>Открыть демо</b><span>→</span></div></a>
+    <a class="demo" href="demo.html?n=pion" style="background:#FFF1F3;color:#3A1420">
+      <div class="top"><span class="ring" style="background:#C2185B"></span><div class="k">цветы · доставка</div><h3>Пион и Ко</h3><p>Доставка ко времени, напоминания о датах, подписка на букеты.</p></div>
+      <div class="bot"><b>Открыть демо</b><span>→</span></div></a>
+  </div>
+  <p style="color:var(--muted);margin-top:16px;font-size:14px">Хотите сайт с «вау»: 3D, частицы, анимация по скроллу? <a href="zerno-site.html" target="_blank" rel="noopener" style="color:var(--acc)">Посмотрите сайт «Зерна» целиком ↗</a></p>
+</div></section>
+
+<section id="price" class="light"><div class="wrap">
+  <div class="head"><h2>Тарифы для кофеен</h2><p>Для брендов одежды и цветочных — свои тарифы, обсудим в заявке. Цена в месяц, без скрытых платежей.</p></div>
+  <div class="tiers">
+    <div class="tier"><span class="n">Старт</span><div class="p">1 990 ₽ <small>/мес</small></div><div class="f">основателям — 1 490 ₽ на год</div>
+      <ul><li>Сайт-меню под ваш бренд</li><li>Бот в Telegram и веб-карта гостя</li><li>Баллы и штампы: кассир сканирует QR</li><li>Отзывы: хорошие — на Яндекс Карты, плохие — вам</li><li>Документы по 152-ФЗ</li></ul>
+      <a class="btn tg" href="#" target="_blank" rel="noopener">Хочу Старт</a></div>
+    <div class="tier main"><span class="n">Основа · популярный</span><div class="p">4 990 ₽ <small>/мес</small></div><div class="f">основателям — 3 990 ₽ на год</div>
+      <ul><li>Всё из «Старта»</li><li>Баллы автоматически через iiko</li><li>Рассылки и триггеры: день рождения, «давно не были»</li><li>Уровни, достижения, серии визитов</li><li>Сводка владельцу каждый вечер</li><li>Вызов официанта по QR стола</li></ul>
+      <a class="btn a tg" href="#" target="_blank" rel="noopener">Хочу Основу</a></div>
+    <div class="tier"><span class="n">Про</span><div class="p">7 990 ₽ <small>/мес</small></div><div class="f">основателям — 5 990 ₽ на год</div>
+      <ul><li>Всё из «Основы»</li><li>До 5 точек</li><li>ИИ-аналитик: спросите, почему упала выручка</li><li>Вау-дизайн сайта</li><li>Тепловая карта и «кто перестал ходить»</li></ul>
+      <a class="btn tg" href="#" target="_blank" rel="noopener">Хочу Про</a></div>
+  </div>
+  <div class="offer">
+    <div><div class="mono" style="color:var(--acc)">цена основателя</div><h3 style="margin-top:10px">Первым 20 — <em>цена на год</em> и запуск в подарок</h3></div>
+    <ul><li><b>Пониженная цена</b> зафиксирована на 12 месяцев</li><li><b>Запуск бесплатно</b> (обычно 4 990 ₽)</li><li>Взамен — честный отзыв и кейс через 2 месяца</li></ul>
+  </div>
+  <p class="small">После первых 20: −50% на первые 3 месяца. Запуск 4 990 ₽ или бесплатно при оплате за 6 месяцев.</p>
+</div></section>
+
+<section id="law"><div class="wrap">
+  <div class="head"><h2>Документы и 152-ФЗ — под ключ</h2><p>Закон о персональных данных ужесточили. Прописываем документы под ваши реквизиты и храним данные гостей так, как требует закон.</p></div>
+  <div class="law">
+    <div class="box"><span class="num">на каждом сайте</span><ul><li>Политика конфиденциальности</li><li>Согласие на обработку персональных данных — отдельным документом</li><li>Политика cookie</li><li>Контакты и реквизиты ИП или компании</li><li>Указание авторских прав</li></ul></div>
+    <div class="box"><span class="num">если продаёте на сайте</span><ul><li>Пользовательское соглашение</li><li>Публичная оферта</li><li>Политика оплаты и возврата</li></ul><p style="margin-top:12px;font-size:14px">Эти документы лучше составить с вашим юристом — мы дадим шаблоны и разместим. Без них онлайн-оплату не включаем.</p></div>
+    <div class="box"><span class="num">кто за что отвечает</span><ul><li>Вы — оператор персональных данных ваших гостей</li><li>Мы обрабатываем данные по вашему поручению — это прописано в договоре</li><li>Храним только на серверах в России, защищаем и не используем в своих целях</li><li>По запросу гостя — выгрузка и удаление данных, журнал согласий</li></ul></div>
+    <div class="box"><span class="num">домен на вас</span><ul><li>С 1 сентября 2026 года домены .ru и .рф регистрируются с подтверждением через Госуслуги</li><li>Домен оформляем на ваше ИП или компанию — он остаётся вашим</li><li>Подключаем его к сайту и боту сами</li></ul></div>
+  </div>
+  <p style="color:var(--muted);margin-top:16px;font-size:14px">Без документов: нет уведомления в Роскомнадзор — штраф до 300 тыс. ₽, согласие не по форме — до 700 тыс. ₽, утечка данных — от 3 до 15 млн ₽.</p>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <div class="head"><h2>Чем мы отличаемся</h2><p>Сравнили с тем, что обычно предлагают кофейням.</p></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Teglo</th><th>Сервисы лояльности</th><th>Конструкторы</th><th>Студия</th></tr></thead>
+    <tbody>
+      <tr class="us"><td>Цена</td><td class="y">от 1 990 ₽/мес</td><td>5 000–11 000 ₽/мес</td><td>0–3 000 ₽/мес</td><td>от 300 тыс. ₽</td></tr>
+      <tr><td>Сайт под ваш бренд</td><td class="y">да</td><td class="no">нет</td><td>шаблон</td><td>да</td></tr>
+      <tr><td>Бот и карта гостя</td><td class="y">да</td><td>да</td><td>частично</td><td>да</td></tr>
+      <tr><td>Интеграция с iiko</td><td class="y">да</td><td>да</td><td class="no">нет</td><td>за доплату</td></tr>
+      <tr><td>Документы по 152-ФЗ</td><td class="y">да</td><td>частично</td><td class="no">нет</td><td>за доплату</td></tr>
+      <tr><td>Запуск</td><td class="y">за неделю</td><td>1–2 недели</td><td>сами</td><td>2–4 месяца</td></tr>
+    </tbody></table></div>
+</div></section>
+
+<section id="faq" style="padding-top:0"><div class="wrap">
+  <div class="head"><h2>Вопросы</h2></div>
+  <div class="faq">
+    <details><summary>Гостям нужно что-то скачивать?</summary><p>Нет. Карта работает в Telegram-боте или по QR в браузере. Сайт можно добавить на экран «Домой» — он откроется как приложение.</p></details>
+    <details><summary>У меня iiko. Это сложно подключить?</summary><p>Нет: вы даёте доступ к API iikoCard, мы проверяем права одной кнопкой и подключаем. Баллы и чеки дальше приходят сами.</p></details>
+    <details><summary>А если у меня нет iiko?</summary><p>Тариф «Старт»: кассир сканирует QR гостя в боте и вводит сумму — баллы начисляются сразу.</p></details>
+    <details><summary>Можно поменять дизайн и тексты?</summary><p>Да, в любой момент — в админке или попросить нас. Цвета, шрифты и блоки подбираются под ваш бренд.</p></details>
+    <details><summary>Есть минимальный срок?</summary><p>Помесячная оплата без долгих договоров. При оплате за 6 месяцев — запуск в подарок.</p></details>
+    <details><summary>Кто отвечает за персональные данные гостей?</summary><p>По закону оператор — ваш бизнес. Мы обрабатываем данные по вашему поручению: это закреплено в договоре, данные хранятся в России, и мы не используем их в своих целях.</p></details>
+    <details><summary>На кого оформляется домен?</summary><p>На вас — ИП или компанию: с 1 сентября 2026 года это делается с подтверждением через Госуслуги. Подключение к сайту и боту берём на себя.</p></details>
+  </div>
+</div></section>
+
+<section class="final"><div class="wrap">
+  <div class="mono" style="color:var(--acc)">осталось мест по цене основателя: 20</div>
+  <h2 style="margin-top:16px">Покажем демо на вашем логотипе</h2>
+  <p>Напишите в Telegram — соберём пример под ваше заведение за день. Бесплатно и без обязательств.</p>
+  <a class="btn a tg" href="#" target="_blank" rel="noopener">Написать в Telegram ↗</a>
+</div></section>
+
+<footer><div class="wrap"><span>teglo. — сайт, бот и лояльность для малого бизнеса</span><span><a href="https://t.me/tegloru" target="_blank" rel="noopener" style="color:inherit">Канал @tegloru</a> · Данные в примерах — вымышленные</span></div></footer>
+
+<script>
+const TG_LINK = "https://t.me/tegloru_bot?start=lead";   /* сюда — ник для заявок */
+document.querySelectorAll(".tg").forEach(a=>a.href=TG_LINK);
+</script>
+</body>
+</html>

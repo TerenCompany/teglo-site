@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Зерно — кофейня</title>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0E0F12"><link rel="icon" href="/icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icons/icon-180.png">
+<link href="/fonts/fonts.css" rel="stylesheet">
+<style>
+:root {
+  /* Мир кофейни: эспрессо-тёмные секции чередуются с молочными; карамель — единственный акцент. Раскладка: крупная типографика слева, живой объект справа */
+  --espresso: #120B07;
+  --roast: #3D2217;
+  --milk: #F1EBE1;
+  --foam: #FAF6EF;
+  --caramel: #C9853F;
+  --cream: #E3D9CB;
+  --ink: #120B07;
+  --muted-dark: rgba(243,239,232,.62);
+  --muted-light: #6E6257;
+  --line-dark: rgba(243,239,232,.16);
+  --line-light: #D6CCBF;
+  --display: "Inter Tight", "Arial Narrow", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --script: "Marck Script", "Segoe Script", cursive;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--espresso); color: var(--foam); font-family: var(--display); font-weight: 500; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+.mono { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.wrap { width: min(1280px, 100% - 48px); margin-inline: auto; }
+h1, h2 { font-weight: 800; letter-spacing: -.045em; line-height: .92; text-transform: uppercase; text-wrap: balance; }
+:focus-visible { outline: 2px solid var(--caramel); outline-offset: 3px; }
+
+/* ---------- прелоадер ---------- */
+.loader { position: fixed; inset: 0; z-index: 100; background: var(--espresso); display: grid; place-items: center; animation: loaderOut .7s 1.7s cubic-bezier(.7,0,.3,1) forwards; }
+.loader svg { width: 96px; overflow: visible; animation: tilt .5s 1.15s ease-in forwards; transform-origin: 70% 30%; }
+.loader .fill { animation: fillUp 1.1s .1s ease-out forwards; transform: translateY(100%); }
+.loader .pour { position: absolute; inset: 0; background: linear-gradient(var(--roast), #6B4428); transform: translateY(-100%); animation: pour .7s 1.45s cubic-bezier(.6,0,.4,1) forwards; }
+@keyframes fillUp { to { transform: translateY(8%); } }
+@keyframes tilt { to { transform: rotate(68deg) translate(10px,-6px); } }
+@keyframes pour { 0% { transform: translateY(-100%); } 100% { transform: translateY(0); } }
+@keyframes loaderOut { to { transform: translateY(100%); visibility: hidden; } }
+
+/* ---------- шапка ---------- */
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 50; mix-blend-mode: difference; color: #fff; }
+header .wrap { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 64px; }
+header nav { display: flex; gap: 22px; }
+header nav a { text-decoration: none; }
+header .logo { font-weight: 800; font-size: 22px; letter-spacing: -.04em; text-transform: lowercase; text-decoration: none; }
+header .hdr-cta { justify-self: end; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px; }
+
+/* ---------- первый экран ---------- */
+.hero { position: relative; background: radial-gradient(60% 70% at 70% 45%, var(--roast) 0%, var(--espresso) 70%); padding-top: 96px; overflow: hidden; }
+.hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 24px; align-items: center; min-height: min(860px, 100svh); padding-bottom: 32px; }
+.hero h1 { font-size: clamp(56px, 8.4vw, 124px); margin: 18px 0 0; }
+.hero h1 span { display: block; animation: rise .9s cubic-bezier(.2,.8,.2,1) both; }
+.hero h1 span:nth-child(2) { animation-delay: .08s; }
+.script { font-family: var(--script); color: var(--caramel); font-size: clamp(56px, 7vw, 104px); line-height: 1; display: inline-block; margin-top: -.1em; clip-path: inset(0 0 0 0); animation: write 1.4s 2.1s ease-out both; text-transform: none; letter-spacing: 0; font-weight: 400; }
+@keyframes write { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes rise { from { transform: translateY(40%); opacity: .0; } to { transform: none; opacity: 1; } }
+.hero p.lead { max-width: 42ch; margin-top: 22px; font-size: 14px; line-height: 1.55; letter-spacing: .04em; text-transform: uppercase; color: var(--muted-dark); }
+.hero .cta { display: flex; gap: 14px; margin-top: 30px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 10px; padding: 15px 22px; border-radius: 999px; font: 500 15px var(--display); text-decoration: none; border: 1px solid var(--cream); cursor: pointer; transition: transform .25s, background .25s, color .25s; }
+.btn.solid { background: var(--cream); color: var(--ink); }
+.btn:hover { transform: translateY(-2px); }
+.facts { display: grid; grid-template-columns: repeat(3, auto); gap: 0; margin-top: 46px; border-top: 1px solid var(--line-dark); }
+.facts div { padding: 14px 22px 0 0; margin-right: 22px; border-right: 1px solid var(--line-dark); color: var(--muted-dark); line-height: 1.6; }
+.facts div:last-child { border-right: 0; }
+.facts b { color: var(--foam); font-weight: 400; display: block; }
+.stage { position: relative; height: min(640px, 70vh); }
+#cupCanvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: pan-y; }
+#cupCanvas:active { cursor: grabbing; }
+.glass { position: absolute; top: 18px; right: 0; z-index: 2; width: 248px; padding: 16px 18px; border-radius: 16px; background: rgba(30,22,18,.62); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--line-dark); }
+.glass .t { color: var(--muted-dark); }
+.glass .name { display: flex; justify-content: space-between; margin: 10px 0 6px; font-size: 18px; font-weight: 800; letter-spacing: -.02em; text-transform: uppercase; transition: opacity .35s; }
+.glass .sub { color: var(--muted-dark); font-size: 10.5px; }
+.hint { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); color: var(--muted-dark); white-space: nowrap; }
+
+/* ---------- частицы ---------- */
+.morph { position: relative; height: 420vh; background: var(--espresso); }
+.morph .sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: radial-gradient(50% 55% at 50% 50%, #2A1810 0%, var(--espresso) 75%); }
+#dust { position: absolute; inset: 0; width: 100%; height: 100%; }
+.morph .cap { position: absolute; left: 0; right: 0; bottom: 9vh; text-align: center; pointer-events: none; }
+.morph .cap .mono { color: var(--caramel); }
+.morph .cap h2 { font-size: clamp(34px, 5vw, 72px); margin-top: 10px; transition: opacity .4s; }
+.morph .steps { position: absolute; top: 50%; right: 24px; transform: translateY(-50%); display: grid; gap: 10px; }
+.morph .steps i { width: 6px; height: 6px; border-radius: 50%; background: var(--line-dark); transition: background .3s, transform .3s; }
+.morph .steps i.on { background: var(--caramel); transform: scale(1.5); }
+.morph .tag { position: absolute; top: 96px; left: 24px; color: var(--muted-dark); }
+
+/* ---------- светлые секции ---------- */
+.light { background: var(--milk); color: var(--ink); }
+.light .mono.t { color: var(--muted-light); }
+.menu { padding: 120px 0 130px; position: relative; overflow: hidden; }
+.menu .head { display: flex; justify-content: space-between; align-items: end; gap: 24px; position: relative; z-index: 1; }
+.menu h2 { font-size: clamp(48px, 7vw, 104px); }
+.swash { position: absolute; left: -4%; top: 40px; width: 70%; z-index: 0; opacity: .9; }
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 64px; perspective: 900px; position: relative; z-index: 1; }
+.card { position: relative; background: var(--foam); border: 1px solid var(--line-light); border-radius: 18px; padding: 18px 18px 20px; transform-style: preserve-3d; transition: transform .15s ease-out, box-shadow .3s; overflow: hidden; }
+.card:hover { box-shadow: 0 24px 50px -24px rgba(61,34,23,.35); }
+.card .art { aspect-ratio: 1 / 1.1; display: grid; place-items: center; background: radial-gradient(circle at 50% 60%, #EADFCF, var(--foam) 68%); border-radius: 12px; }
+.card .art svg { width: 70%; height: auto; }
+.card .row { display: flex; justify-content: space-between; margin-top: 16px; font-family: var(--mono); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
+.card .glare { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at var(--gx,50%) var(--gy,0%), rgba(255,255,255,.55), transparent 45%); opacity: 0; transition: opacity .3s; }
+.card:hover .glare { opacity: 1; }
+
+/* часы */
+.hours { position: relative; height: 240vh; }
+.hours .sticky { position: sticky; top: 0; min-height: 100vh; min-height: 100svh; display: grid; align-items: center; }
+.hours .grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 40px; align-items: center; }
+.addr { display: grid; gap: 26px; }
+.addr div { border-top: 1px solid var(--line-light); padding-top: 12px; }
+.addr b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.02em; text-transform: uppercase; margin-top: 6px; }
+.addr span { color: var(--muted-light); font-size: 14px; }
+.dial { width: min(440px, 80vw); aspect-ratio: 1; position: relative; }
+.dial svg { width: 100%; height: 100%; overflow: visible; }
+.open-now { justify-self: end; text-align: right; }
+.open-now .big { font-size: clamp(40px, 5vw, 76px); font-weight: 800; letter-spacing: -.04em; line-height: .95; }
+.open-now .mono { color: var(--muted-light); margin-top: 14px; display: block; }
+
+/* город */
+.city { position: relative; min-height: 120vh; overflow: hidden; background: radial-gradient(55% 60% at 50% 50%, #2B1810, var(--espresso) 75%); display: grid; align-items: center; }
+#beans { position: absolute; inset: 0; z-index: 0; }
+.city h2 { position: relative; z-index: 2; font-size: clamp(40px, 6vw, 92px); max-width: 15ch; }
+.city h2 em { font-style: normal; color: var(--caramel); }
+.city p { position: relative; z-index: 2; margin-top: 26px; max-width: 46ch; color: var(--muted-dark); line-height: 1.6; }
+
+/* заказ + чек */
+.order { position: relative; height: 230vh; background: var(--espresso); }
+.order .sticky { position: sticky; top: 0; height: 100vh; height: 100svh; display: grid; align-items: center; overflow: hidden; }
+.order .grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 40px; align-items: start; }
+.order h2 { font-size: clamp(44px, 6vw, 88px); }
+.printer { width: 300px; position: relative; padding-top: 0; }
+.slot { height: 26px; border-radius: 10px; background: linear-gradient(#3B3632, #1C1916 60%, #2D2925); box-shadow: inset 0 -4px 6px rgba(0,0,0,.6), 0 10px 30px rgba(0,0,0,.5); position: relative; z-index: 2; }
+.slot::after { content: ""; position: absolute; left: 14px; right: 14px; top: 11px; height: 3px; border-radius: 2px; background: #000; }
+.paper-clip { position: relative; margin: -8px 14px 0; height: 66vh; overflow: hidden; }
+.receipt { background: #FBF8F2; color: #1A1410; font-family: var(--mono); font-size: 12px; padding: 26px 22px 34px; transform: translateY(-82%); will-change: transform;
+  -webkit-mask: linear-gradient(#000 0 0) top/100% calc(100% - 10px) no-repeat, conic-gradient(from 135deg at 50% 0, #000 90deg, #0000 0) bottom/16px 10px repeat-x;
+  mask: linear-gradient(#000 0 0) top/100% calc(100% - 10px) no-repeat, conic-gradient(from 135deg at 50% 0, #000 90deg, #0000 0) bottom/16px 10px repeat-x; }
+.receipt .logo { font: 800 26px var(--display); letter-spacing: -.04em; text-align: center; text-transform: lowercase; }
+.receipt .c { text-align: center; color: #6B5D52; margin: 4px 0 14px; }
+.receipt .ln { display: flex; justify-content: space-between; padding: 4px 0; }
+.receipt hr { border: 0; border-top: 1px dashed #B9AEA3; margin: 10px 0; }
+.receipt .tot { font-weight: 400; font-size: 14px; }
+.receipt .bonus { margin-top: 12px; padding: 10px; border: 1px solid #1A1410; text-align: center; line-height: 1.5; }
+.receipt .shout { font: 800 22px/1 var(--display); letter-spacing: -.03em; text-transform: uppercase; text-align: center; margin: 18px 0 14px; }
+.barcode { height: 44px; background: repeating-linear-gradient(90deg, #1A1410 0 2px, transparent 2px 4px, #1A1410 4px 7px, transparent 7px 8px, #1A1410 8px 9px, transparent 9px 12px); }
+.order .right p { color: var(--muted-dark); line-height: 1.6; max-width: 36ch; }
+.order .right .btn { margin-top: 24px; }
+
+/* карта гостя */
+.loyal { padding: 130px 0; }
+.loyal .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.loyal h2 { font-size: clamp(44px, 6vw, 92px); }
+.loyal ul { list-style: none; margin-top: 30px; display: grid; gap: 14px; max-width: 46ch; }
+.loyal li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; color: var(--muted-light); line-height: 1.5; }
+.loyal li b { font-family: var(--mono); font-weight: 400; color: var(--caramel); }
+.phone { justify-self: center; width: 300px; aspect-ratio: 9 / 18.5; border-radius: 44px; background: #1A1410; padding: 12px; box-shadow: 0 40px 80px -30px rgba(18,11,7,.55); }
+.screen { height: 100%; border-radius: 34px; background: var(--foam); padding: 22px 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.screen .top { display: flex; justify-content: space-between; align-items: center; font: 800 18px var(--display); letter-spacing: -.03em; text-transform: lowercase; }
+.screen .top span { font: 400 11px var(--mono); color: var(--muted-light); text-transform: uppercase; }
+.gcard { background: linear-gradient(140deg, #3D2217, #6B4428); color: var(--foam); border-radius: 20px; padding: 16px; display: grid; gap: 10px; }
+.gcard .qr { width: 104px; height: 104px; background: #fff; border-radius: 10px; padding: 8px; justify-self: center; }
+.gcard .code { text-align: center; font: 400 18px var(--mono); letter-spacing: .3em; }
+.gcard .bal { display: flex; justify-content: space-between; align-items: baseline; }
+.gcard .bal b { font-size: 32px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.stamps { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.stamps i { aspect-ratio: 1; border-radius: 50%; border: 1.5px dashed #B9AEA3; display: grid; place-items: center; transition: background .3s, border-color .3s; }
+.stamps i.on { background: var(--caramel); border: 1.5px solid var(--caramel); }
+.stamps i.gift { border-color: var(--caramel); color: var(--caramel); font: 400 9px var(--mono); }
+.toast { background: #EFE6D8; border-radius: 14px; padding: 10px 12px; font-size: 13px; line-height: 1.45; transition: opacity .4s, transform .4s; }
+.toast b { font-weight: 800; }
+
+footer { padding: 70px 0 40px; border-top: 1px solid var(--line-dark); }
+footer .cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; color: var(--muted-dark); }
+footer .cols a { display: block; text-decoration: none; margin-top: 8px; color: var(--foam); }
+footer .huge { font-size: clamp(90px, 22vw, 330px); font-weight: 800; letter-spacing: -.07em; line-height: .8; margin-top: 60px; text-transform: lowercase; color: var(--roast); }
+footer .demo { margin-top: 24px; color: var(--muted-dark); }
+
+@media (max-width: 860px) {
+  header nav { display: none; }
+  header .wrap { grid-template-columns: 1fr auto; }
+  header .hdr-cta { grid-column: 2; }
+  header .logo { justify-self: start; }
+  .hero .wrap, .hours .grid, .order .grid, .loyal .grid { grid-template-columns: 1fr; }
+  .stage { height: 58vh; }
+  .glass { right: auto; left: 0; top: 0; width: 220px; }
+  .facts { grid-template-columns: 1fr; }
+  .facts div { border-right: 0; }
+  .cards { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+  .card { flex: 0 0 72%; scroll-snap-align: start; }
+  .open-now { justify-self: start; text-align: left; }
+  .printer { justify-self: center; }
+  .paper-clip { height: 52vh; }
+  .order .sticky { align-items: start; padding-top: 90px; }
+  footer .cols { grid-template-columns: 1fr 1fr; }
+  .morph .steps { right: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loader { display: none; }
+  .hero h1 span, .script { animation: none; }
+}
+</style>
+</head>
+<body>
+<div class="loader" aria-hidden="true">
+  <svg viewBox="0 0 80 100">
+    <defs><clipPath id="cupclip"><path d="M10 14 H70 L62 94 H18 Z"/></clipPath></defs>
+    <g clip-path="url(#cupclip)"><rect class="fill" x="0" y="0" width="80" height="100" fill="#8A5A36"/></g>
+    <path d="M10 14 H70 L62 94 H18 Z" fill="none" stroke="#E3D9CB" stroke-width="2"/>
+    <path d="M6 8 H74 V14 H6 Z" fill="none" stroke="#E3D9CB" stroke-width="2"/>
+  </svg>
+  <div class="pour"></div>
+</div>
+
+<header>
+  <div class="wrap mono">
+    <nav aria-label="Разделы"><a href="#menu">Меню</a><a href="#hours">Адреса</a><a href="#card">Карта гостя</a></nav>
+    <a class="logo" href="#top">зерно</a>
+    <a class="hdr-cta" href="#order">Заказать заранее</a>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="mono" style="color:var(--caramel)">// кофейня спешелти · Москва</div>
+      <h1><span>Кофе</span><span>для твоего</span></h1>
+      <span class="script">момента</span>
+      <p class="lead">Зёрна с ферм, которым мы доверяем. Обжариваем маленькими партиями и варим так, чтобы каждая чашка была лучшей за день.</p>
+      <div class="cta">
+        <a class="btn solid" href="#menu">Смотреть меню ↗</a>
+        <a class="btn" href="#card">Карта гостя</a>
+      </div>
+      <div class="facts mono">
+        <div>Открыто каждый день<b>07:00 – 21:00</b></div>
+        <div>Две кофейни<b>ул. Вымышленная, 1</b></div>
+        <div>6-й кофе<b>в подарок</b></div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="glass">
+        <div class="mono t">// в стакане</div>
+        <div class="name" id="glassName"><span>Раф лаванда</span><span>280 ₽</span></div>
+        <div class="mono sub" id="glassSub">350 мл · варим каждый день · с собой</div>
+      </div>
+      <canvas id="cupCanvas" aria-label="3D-стакан кофе и пачка зерна, можно повернуть"></canvas>
+      <div class="hint mono">← потяни, чтобы повернуть →</div>
+    </div>
+  </div>
+</section>
+
+<section class="morph" aria-label="Путь зерна">
+  <div class="sticky">
+    <canvas id="dust" aria-hidden="true"></canvas>
+    <div class="tag mono">// путь зерна · листай</div>
+    <div class="steps" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
+    <div class="cap">
+      <div class="mono" id="capNum">01 / 04</div>
+      <h2 id="capText">Зерно с фермы</h2>
+    </div>
+  </div>
+</section>
+
+<section class="light menu" id="menu">
+  <svg class="swash" viewBox="0 0 900 300" fill="none" aria-hidden="true"><path d="M20 210 C 160 40, 260 40, 300 150 S 430 280, 520 140 S 700 20, 880 120" stroke="#DCD3C6" stroke-width="54" stroke-linecap="round"/></svg>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <div class="mono t">// меню</div>
+        <h2 style="margin-top:14px">Любимое.<br>Готовим<br>каждый день</h2>
+      </div>
+      <a class="mono" href="#order" style="text-decoration:none;border-bottom:1px solid">Всё меню →</a>
+    </div>
+    <div class="cards" id="cards">
+      <article class="card"><div class="glare"></div><div class="art">
+        <svg viewBox="0 0 120 120"><ellipse cx="60" cy="98" rx="46" ry="8" fill="#D9CDBC"/><path d="M28 48 h64 l-6 42 a10 10 0 0 1 -10 8 h-32 a10 10 0 0 1 -10 -8z" fill="#FBF8F2" stroke="#3D2217" stroke-width="2.5"/><path d="M92 58 c14 0 14 22 -2 22" fill="none" stroke="#3D2217" stroke-width="2.5"/><ellipse cx="60" cy="48" rx="32" ry="6" fill="#5A321E"/><path d="M50 30 c-4 -8 6 -10 2 -18 M66 32 c-4 -8 6 -10 2 -18" stroke="#C9853F" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      </div><div class="row"><span>Эспрессо</span><span>150 ₽</span></div></article>
+      <article class="card"><div class="glare"></div><div class="art">
+        <svg viewBox="0 0 120 120"><path d="M36 22 h48 l-6 84 h-36z" fill="#F4ECE0" stroke="#3D2217" stroke-width="2.5"/><path d="M38 52 h44 l-1.6 22 h-40.8z" fill="#C49A6C"/><path d="M40.4 74 h39.2 l-2.4 32 h-34.4z" fill="#8A5A36"/><path d="M48 44 c6 -6 18 -6 24 0 c-6 4 -18 4 -24 0z" fill="#fff" stroke="#C9853F" stroke-width="1.5"/></svg>
+      </div><div class="row"><span>Капучино</span><span>220 ₽</span></div></article>
+      <article class="card"><div class="glare"></div><div class="art">
+        <svg viewBox="0 0 120 120"><line x1="70" y1="8" x2="62" y2="60" stroke="#120B07" stroke-width="4" stroke-linecap="round"/><path d="M34 30 h52 l-6 78 h-40z" fill="#EFF3E6" fill-opacity=".7" stroke="#3D2217" stroke-width="2.5"/><path d="M36 60 h48 l-4 48 h-40z" fill="#9DBB6E"/><path d="M36.6 52 h46.8 l-.6 8 h-45.6z" fill="#FBF8F2"/><rect x="44" y="40" width="12" height="12" rx="2" fill="#fff" stroke="#BFD3DB" transform="rotate(-12 50 46)"/><rect x="62" y="44" width="11" height="11" rx="2" fill="#fff" stroke="#BFD3DB" transform="rotate(14 67 49)"/></svg>
+      </div><div class="row"><span>Айс-матча</span><span>320 ₽</span></div></article>
+      <article class="card"><div class="glare"></div><div class="art">
+        <svg viewBox="0 0 120 120"><ellipse cx="60" cy="88" rx="48" ry="12" fill="#FBF8F2" stroke="#3D2217" stroke-width="2"/><g fill="#E2B977" stroke="#8A5A36" stroke-width="2"><rect x="24" y="58" width="32" height="24" rx="10"/><rect x="58" y="56" width="34" height="26" rx="10"/><rect x="40" y="44" width="34" height="22" rx="10"/></g><path d="M44 52 q8 -6 18 0 M30 66 q8 -5 16 0 M64 64 q8 -5 18 0" stroke="#FBF8F2" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+      </div><div class="row"><span>Сырники</span><span>320 ₽</span></div></article>
+    </div>
+  </div>
+</section>
+
+<section class="light hours" id="hours">
+  <div class="sticky">
+    <div class="wrap grid">
+      <div class="addr">
+        <div class="mono t">// наши адреса</div>
+        <div><span class="mono">Кофейня 01</span><b>ул. Вымышленная, 1</b><span>пн–вс · 07:00–21:00</span></div>
+        <div><span class="mono">Кофейня 02</span><b>Липовая аллея, 7</b><span>пн–вс · 08:00–22:00</span></div>
+      </div>
+      <div class="dial">
+        <svg viewBox="-220 -220 440 440" aria-label="Циферблат с айс-кофе">
+          <circle r="200" fill="none" stroke="#120B07" stroke-width="1.5"/>
+          <g id="ticks"></g>
+          <g id="nums" font-family="JetBrains Mono, monospace" font-size="15" fill="#120B07" text-anchor="middle" dominant-baseline="middle"></g>
+          <line id="hHand" x1="0" y1="0" x2="0" y2="-92" stroke="#120B07" stroke-width="6" stroke-linecap="round"/>
+          <line id="mHand" x1="0" y1="0" x2="0" y2="-150" stroke="#120B07" stroke-width="3" stroke-linecap="round"/>
+          <g id="iced">
+            <line x1="12" y1="-150" x2="4" y2="-60" stroke="#120B07" stroke-width="6" stroke-linecap="round"/>
+            <path d="M-38 -96 h76 l-9 168 h-58z" fill="#F3EFE8" fill-opacity=".75" stroke="#3D2217" stroke-width="2.5"/>
+            <path d="M-35 -40 h70 l-6 112 h-58z" fill="#8A5A36"/>
+            <path d="M-35.7 -54 h71.4 l-.7 14 h-70z" fill="#E6D3BC"/>
+            <g fill="#fff" fill-opacity=".85" stroke="#BFD3DB" stroke-width="1.5"><rect x="-26" y="-34" width="20" height="20" rx="3" transform="rotate(-10 -16 -24)"/><rect x="4" y="-22" width="18" height="18" rx="3" transform="rotate(16 13 -13)"/><rect x="-14" y="2" width="17" height="17" rx="3" transform="rotate(8 -5 10)"/></g>
+          </g>
+          <circle r="5" fill="#C9853F"/>
+        </svg>
+      </div>
+      <div class="open-now"><div class="big" id="openState">Открыто<br>сейчас</div><span class="mono" id="openTime">до 21:00</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="city">
+  <canvas id="beans" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="mono" style="color:var(--caramel);position:relative;z-index:2">// по пути на работу</div>
+    <h2 style="margin-top:16px">Город не останавливается. <em>Твой кофе тоже.</em></h2>
+    <p>Закажи в боте за минуту до выхода из дома — заберёшь без очереди, а баллы упадут на карту сами.</p>
+  </div>
+</section>
+
+<section class="order" id="order">
+  <div class="sticky">
+    <div class="wrap grid">
+      <div><div class="mono" style="color:var(--caramel)">// заказ</div><h2 style="margin-top:16px">Кофе<br>прямо<br>сейчас.</h2></div>
+      <div class="printer">
+        <div class="slot"></div>
+        <div class="paper-clip"><div class="receipt" id="receipt">
+          <div class="logo">зерно</div>
+          <div class="c">кофейня · ул. Вымышленная, 1</div>
+          <div class="ln"><span>Раф лаванда</span><span>280.00</span></div>
+          <div class="ln"><span>Капучино</span><span>220.00</span></div>
+          <div class="ln"><span>Сырники</span><span>320.00</span></div>
+          <hr>
+          <div class="ln tot"><span>Итого</span><span>820.00 ₽</span></div>
+          <div class="bonus">+41 балл на карту гостя<br>штампов: 5 из 6</div>
+          <div class="shout">Без очереди.<br>Закажи заранее.</div>
+          <div class="barcode"></div>
+          <div class="c" style="margin:10px 0 0">демо-чек · не является фискальным</div>
+        </div></div>
+      </div>
+      <div class="right"><p>Предзаказ в Telegram-боте: выбери напиток, время и точку. Мы начнём варить, когда ты будешь в пяти минутах.</p><a class="btn" href="#card" style="color:var(--foam)">Заказать ↗</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="light loyal" id="card">
+  <div class="wrap grid">
+    <div>
+      <div class="mono t">// карта гостя</div>
+      <h2 style="margin-top:16px">Шестой<br>кофе —<br>наш</h2>
+      <ul>
+        <li><b>01</b><span>Карта живёт в Telegram или просто в браузере — приложение скачивать не нужно.</span></li>
+        <li><b>02</b><span>Покажи QR на кассе: баллы и штампы начислятся сами, а баланс обновится прямо в чате.</span></li>
+        <li><b>03</b><span>В день рождения — подарок, а за серию визитов — приятные бонусы.</span></li>
+      </ul>
+      <div class="cta" style="margin-top:30px"><a class="btn solid" href="#top" style="background:var(--ink);color:var(--foam);border-color:var(--ink)">Получить карту</a></div>
+    </div>
+    <div class="phone" aria-label="Пример карты гостя">
+      <div class="screen">
+        <div class="top">зерно <span>карта гостя</span></div>
+        <div class="gcard">
+          <canvas class="qr" id="qr" width="88" height="88" aria-hidden="true"></canvas>
+          <div class="code">К 4821</div>
+          <div class="bal"><span class="mono" style="opacity:.7">баллы</span><b id="bal">162</b></div>
+        </div>
+        <div class="mono" style="color:var(--muted-light)">Штампы · 6-й кофе в подарок</div>
+        <div class="stamps" id="stamps"><i></i><i></i><i></i><i></i><i></i><i class="gift">☕</i></div>
+        <div class="toast" id="toast"><b>+41 балл</b> за визит на Вымышленной. Всего 203.</div>
+        <div class="toast" style="opacity:.75">Серия: 4 недели подряд. Загляни до воскресенья.</div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="cols mono">
+      <div>Меню<a href="#menu">Напитки</a><a href="#menu">Десерты</a></div>
+      <div>Адреса<a href="#hours">Вымышленная, 1</a><a href="#hours">Липовая аллея, 7</a></div>
+      <div>Гостям<a href="#card">Карта гостя</a><a href="#order">Предзаказ</a></div>
+      <div>Документы<a href="#top">Политика ПДн</a><a href="#top">Согласие</a></div>
+    </div>
+    <div class="huge">зерно</div>
+    <p class="demo mono">Демо-сайт платформы Teglo для кофеен. Кофейня «Зерно» вымышленная.</p>
+  </div>
+</footer>
+
+<script type="importmap">{ "imports": { "three": "/vendor/three.module.min.js" } }</script>
+<script type="module">
+import * as THREE from "three";
+
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const mobile = innerWidth < 860;
+const DPR = Math.min(devicePixelRatio || 1, 2);
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const smooth = t => t * t * (3 - 2 * t);
+function progressOf(el) { const r = el.getBoundingClientRect(); const total = r.height - innerHeight; return total > 0 ? clamp(-r.top / total) : clamp((innerHeight - r.top) / (innerHeight + r.height)); }
+
+/* ========== 1. 3D-стакан и пачка ========== */
+function labelTexture(w, h, draw) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const g = c.getContext("2d"); draw(g, w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+}
+const cupTex = labelTexture(1024, 512, (g, w, h) => {
+  g.fillStyle = "#EEE9E2"; g.fillRect(0, 0, w, h);
+  g.fillStyle = "#6B4428"; g.fillRect(0, h * .30, w, h * .36);
+  g.fillStyle = "#F3EFE8"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.font = "800 92px 'Inter Tight', Arial"; g.fillText("зерно", w * .25, h * .46);
+  g.font = "400 26px 'JetBrains Mono', monospace"; g.fillText("COFFEE · MOSCOW", w * .25, h * .58);
+  g.font = "400 90px 'Marck Script', cursive"; g.fillStyle = "#E3B177"; g.fillText("момент", w * .75, h * .48);
+});
+const packTex = labelTexture(512, 768, (g, w, h) => {
+  g.fillStyle = "#E3D7C3"; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 1400; i++) { g.fillStyle = `rgba(120,90,60,${Math.random() * .08})`; g.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+  g.fillStyle = "#120B07"; g.textAlign = "center";
+  g.font = "800 84px 'Inter Tight', Arial"; g.fillText("зерно", w / 2, h * .2);
+  g.font = "400 22px 'JetBrains Mono', monospace"; g.fillText("ОБЖАРКА В МОСКВЕ", w / 2, h * .27);
+  g.font = "400 120px 'Marck Script', cursive"; g.fillStyle = "#6B4428"; g.fillText("slow roast", w / 2, h * .52);
+  g.font = "400 20px 'JetBrains Mono', monospace"; g.fillStyle = "#3D2217";
+  ["ЭФИОПИЯ · ГУДЖИ", "ЧЕРНИКА · ЖАСМИН · КАКАО", "250 Г · СРЕДНЯЯ ОБЖАРКА"].forEach((s, i) => g.fillText(s, w / 2, h * (.72 + i * .06)));
+});
+
+function initCup() {
+  const canvas = document.getElementById("cupCanvas");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(DPR); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, 1, .1, 100); camera.position.set(0, 1.6, 9.5); camera.lookAt(0, 1.2, 0);
+  scene.add(new THREE.HemisphereLight(0xfff4e6, 0x2a1810, .65));
+  const key = new THREE.DirectionalLight(0xfff1de, 2.6); key.position.set(-4, 7, 5); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.radius = 6; scene.add(key);
+  const rim = new THREE.PointLight(0xff9a4a, 30, 20); rim.position.set(4, 3, -3); scene.add(rim);
+
+  const group = new THREE.Group(); scene.add(group);
+  // стакан — тело вращения
+  const prof = [];
+  for (let i = 0; i <= 20; i++) { const t = i / 20; prof.push(new THREE.Vector2(.56 + .2 * t, t * 2.3)); }
+  const body = new THREE.Mesh(new THREE.LatheGeometry(prof, 72), new THREE.MeshStandardMaterial({ map: cupTex, roughness: .55 }));
+  body.castShadow = true;
+  const bottom = new THREE.Mesh(new THREE.CircleGeometry(.56, 48), new THREE.MeshStandardMaterial({ color: 0x1a1410 })); bottom.rotation.x = Math.PI / 2;
+  const lidMat = new THREE.MeshStandardMaterial({ color: 0x15100d, roughness: .35, metalness: .1 });
+  const lid = new THREE.Mesh(new THREE.CylinderGeometry(.74, .8, .16, 64), lidMat); lid.position.y = 2.36; lid.castShadow = true;
+  const dome = new THREE.Mesh(new THREE.CylinderGeometry(.6, .72, .14, 64), lidMat); dome.position.y = 2.5;
+  const sip = new THREE.Mesh(new THREE.BoxGeometry(.22, .05, .06), new THREE.MeshStandardMaterial({ color: 0x050403 })); sip.position.set(0, 2.58, .45);
+  const cup = new THREE.Group(); cup.add(body, bottom, lid, dome, sip); cup.position.set(.6, 0, .4); group.add(cup);
+  // пачка
+  const kraft = new THREE.MeshStandardMaterial({ color: 0xd8cbb4, roughness: .9 });
+  const front = new THREE.MeshStandardMaterial({ map: packTex, roughness: .85 });
+  const pack = new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.9, .62), [kraft, kraft, kraft, kraft, front, kraft]);
+  pack.castShadow = true; pack.position.set(-1.05, .95, -.5); pack.rotation.y = .45;
+  const fold = new THREE.Mesh(new THREE.BoxGeometry(1.25, .22, .14), kraft); fold.position.set(0, 1.04, 0); pack.add(fold);
+  group.add(pack);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.ShadowMaterial({ opacity: .35 })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+
+  let drag = false, lastX = 0, vel = 0, spin = 0, visible = true;
+  canvas.addEventListener("pointerdown", e => { drag = true; lastX = e.clientX; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener("pointermove", e => { if (!drag) return; const dx = e.clientX - lastX; lastX = e.clientX; spin += dx * .012; vel = dx * .012; });
+  const stop = () => { drag = false; }; canvas.addEventListener("pointerup", stop); canvas.addEventListener("pointercancel", stop);
+  new IntersectionObserver(([e]) => visible = e.isIntersecting).observe(canvas);
+
+  function resize() { const r = canvas.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(r.height, 1); camera.updateProjectionMatrix(); }
+  resize(); addEventListener("resize", resize);
+  const clock = new THREE.Clock();
+  (function loop() {
+    requestAnimationFrame(loop);
+    if (!visible || document.hidden) return;
+    const t = clock.getElapsedTime();
+    if (!drag) { vel *= .92; spin += vel; spin *= .965; }
+    group.rotation.y = spin + (reduce ? 0 : Math.sin(t * .5) * .18);
+    cup.position.y = reduce ? 0 : Math.sin(t * 1.1) * .05;
+    renderer.render(scene, camera);
+  })();
+}
+
+/* ========== 2. частицы: путь зерна ========== */
+const STAGES = [
+  ["01 / 04", "Зерно с фермы"],
+  ["02 / 04", "Обжарка — в твою чашку"],
+  ["03 / 04", "Варим в «Зерне»"],
+  ["04 / 04", "А шестой — в подарок"],
+];
+function sampleShape(draw, n, scale) {
+  const S = 320, c = document.createElement("canvas"); c.width = c.height = S;
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.strokeStyle = "#fff"; draw(g, S);
+  const d = g.getImageData(0, 0, S, S).data, pts = [];
+  for (let y = 0; y < S; y += 1) for (let x = 0; x < S; x += 1) if (d[(y * S + x) * 4 + 3] > 128) pts.push(x, y);
+  const out = new Float32Array(n * 3), m = pts.length / 2;
+  for (let i = 0; i < n; i++) {
+    const k = (Math.random() * m | 0) * 2;
+    out[i * 3] = (pts[k] / S - .5) * scale + (Math.random() - .5) * .02;
+    out[i * 3 + 1] = -(pts[k + 1] / S - .5) * scale;
+    out[i * 3 + 2] = (Math.random() - .5) * .35;
+  }
+  return out;
+}
+const shapes = [
+  (g, S) => { g.save(); g.translate(S / 2, S / 2); g.rotate(-.5); g.beginPath(); g.ellipse(0, 0, S * .24, S * .36, 0, 0, Math.PI * 2); g.fill();
+    g.globalCompositeOperation = "destination-out"; g.lineWidth = S * .05; g.lineCap = "round"; g.beginPath(); g.moveTo(0, -S * .33); g.bezierCurveTo(S * .11, -S * .1, -S * .11, S * .1, 0, S * .33); g.stroke(); g.restore(); },
+  (g, S) => { g.beginPath(); g.moveTo(S * .2, S * .36); g.lineTo(S * .7, S * .36); g.lineTo(S * .64, S * .8); g.quadraticCurveTo(S * .63, S * .86, S * .56, S * .86); g.lineTo(S * .34, S * .86); g.quadraticCurveTo(S * .27, S * .86, S * .26, S * .8); g.closePath(); g.fill();
+    g.lineWidth = S * .045; g.beginPath(); g.arc(S * .72, S * .55, S * .09, -1.3, 1.3); g.stroke();
+    g.lineWidth = S * .025; g.lineCap = "round"; [.36, .45, .54].forEach(x => { g.beginPath(); g.moveTo(S * x, S * .3); g.bezierCurveTo(S * (x - .05), S * .22, S * (x + .05), S * .17, S * x, S * .08); g.stroke(); }); },
+  (g, S) => { g.textAlign = "center"; g.textBaseline = "middle"; g.font = `800 ${S * .27}px 'Inter Tight', Arial`; g.fillText("зерно", S / 2, S * .5); },
+  (g, S) => { const r = S * .085; for (let i = 0; i < 6; i++) { const x = S * (.27 + (i % 3) * .23), y = S * (.38 + Math.floor(i / 3) * .25); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2);
+      if (i < 5) g.fill(); else { g.lineWidth = S * .018; g.stroke(); g.font = `800 ${S * .07}px Arial`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("6", x, y + 2); } } },
+];
+
+function initDust() {
+  const section = document.querySelector(".morph"), canvas = document.getElementById("dust");
+  const N = mobile ? 5000 : 12000;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true }); renderer.setPixelRatio(DPR);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(40, 1, .1, 50); camera.position.z = 5.2;
+  const scale = mobile ? 3.0 : 3.6;
+  const geo = new THREE.BufferGeometry();
+  const P = shapes.map(s => sampleShape(s, N, scale));
+  geo.setAttribute("position", new THREE.BufferAttribute(P[0], 3));
+  ["p0", "p1", "p2", "p3"].forEach((n, i) => geo.setAttribute(n, new THREE.BufferAttribute(P[i], 3)));
+  const seed = new Float32Array(N), size = new Float32Array(N);
+  for (let i = 0; i < N; i++) { seed[i] = Math.random(); size[i] = Math.random() < .03 ? 9 + Math.random() * 4 : 2.2 + Math.random() * 3.2; }
+  geo.setAttribute("seed", new THREE.BufferAttribute(seed, 1)); geo.setAttribute("psize", new THREE.BufferAttribute(size, 1));
+  const mat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: { uProg: { value: 0 }, uTime: { value: 0 }, uMouse: { value: new THREE.Vector3(99, 99, 0) }, uDpr: { value: DPR }, uSwirl: { value: reduce ? 0 : 1 } },
+    vertexShader: `
+      attribute vec3 p0; attribute vec3 p1; attribute vec3 p2; attribute vec3 p3; attribute float seed; attribute float psize;
+      uniform float uProg; uniform float uTime; uniform vec3 uMouse; uniform float uDpr; uniform float uSwirl;
+      varying float vSeed; varying float vMix;
+      vec3 pick(float i){ return i < .5 ? p0 : (i < 1.5 ? p1 : (i < 2.5 ? p2 : p3)); }
+      void main(){
+        float seg = clamp(floor(uProg), 0., 2.);
+        float f = clamp(uProg - seg, 0., 1.);
+        float e = smoothstep(.3, .7, f);
+        vec3 a = pick(seg), b = pick(seg + 1.);
+        vec3 pos = mix(a, b, e);
+        float burst = sin(f * 3.14159) * uSwirl * smoothstep(0., .3, f) * (1. - smoothstep(.7, 1., f)) * 1.6;
+        float ang = seed * 6.2831 + uTime * .6;
+        pos += vec3(sin(ang + pos.y * 2.), cos(ang * 1.3 + pos.x * 2.), sin(ang * .7)) * burst * (.35 + seed * .6);
+        pos += vec3(sin(uTime * .8 + seed * 40.), cos(uTime * .7 + seed * 33.), 0.) * .012;
+        vec2 d = pos.xy - uMouse.xy; float dist = length(d);
+        pos.xy += normalize(d + 1e-4) * smoothstep(.7, 0., dist) * .35;
+        vec4 mv = modelViewMatrix * vec4(pos, 1.);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = psize * uDpr * (4.6 / -mv.z);
+        vSeed = seed; vMix = e;
+      }`,
+    fragmentShader: `
+      uniform float uTime; varying float vSeed;
+      void main(){
+        float r = length(gl_PointCoord - .5);
+        if (r > .5) discard;
+        float a = smoothstep(.5, .0, r) + .4 * exp(-r * 8.);
+        float tw = .7 + .3 * sin(uTime * 2. + vSeed * 6.28);
+        vec3 caramel = vec3(.86, .56, .28), cream = vec3(1., .93, .82);
+        vec3 col = mix(caramel, cream, step(.5, vSeed));
+        gl_FragColor = vec4(col * tw, a * .55);
+      }`,
+  });
+  const pts = new THREE.Points(geo, mat); scene.add(pts);
+  function resize() { const w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+  resize(); addEventListener("resize", resize);
+  const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), hit = new THREE.Vector3();
+  canvas.parentElement.addEventListener("pointermove", e => { const r = canvas.getBoundingClientRect();
+    ray.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+    if (ray.ray.intersectPlane(plane, hit)) mat.uniforms.uMouse.value.copy(hit); });
+  const capNum = document.getElementById("capNum"), capText = document.getElementById("capText"), dots = [...document.querySelectorAll(".morph .steps i")];
+  let shown = 0, cur = 0, visible = false; const clock = new THREE.Clock();
+  new IntersectionObserver(([e]) => visible = e.isIntersecting).observe(section);
+  (function loop() {
+    requestAnimationFrame(loop);
+    if (!visible || document.hidden) return;
+    const target = progressOf(section) * 3; cur += (target - cur) * .08;
+    mat.uniforms.uProg.value = cur; mat.uniforms.uTime.value = clock.getElapsedTime();
+    pts.rotation.y = reduce ? 0 : Math.sin(clock.getElapsedTime() * .3) * .22;
+    const idx = Math.round(clamp(cur, 0, 3));
+    if (idx !== shown) { shown = idx; capText.style.opacity = 0; setTimeout(() => { capNum.textContent = STAGES[idx][0]; capText.textContent = STAGES[idx][1]; capText.style.opacity = 1; }, 220); dots.forEach((d, i) => d.classList.toggle("on", i === idx)); }
+    renderer.render(scene, camera);
+  })();
+}
+
+/* ========== 3. карточки меню ========== */
+document.querySelectorAll(".card").forEach(card => {
+  card.addEventListener("pointermove", e => { if (reduce) return; const r = card.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    card.style.transform = `rotateY(${(x - .5) * 16}deg) rotateX(${(.5 - y) * 16}deg)`; card.style.setProperty("--gx", x * 100 + "%"); card.style.setProperty("--gy", y * 100 + "%"); });
+  card.addEventListener("pointerleave", () => card.style.transform = "");
+});
+
+/* ========== 4. циферблат ========== */
+const NS = "http://www.w3.org/2000/svg";
+const ticks = document.getElementById("ticks"), nums = document.getElementById("nums");
+for (let i = 0; i < 60; i++) { const a = i / 60 * Math.PI * 2, l = i % 5 ? 8 : 16, el = document.createElementNS(NS, "line");
+  el.setAttribute("x1", Math.sin(a) * 200); el.setAttribute("y1", -Math.cos(a) * 200); el.setAttribute("x2", Math.sin(a) * (200 - l)); el.setAttribute("y2", -Math.cos(a) * (200 - l));
+  el.setAttribute("stroke", "#120B07"); el.setAttribute("stroke-width", i % 5 ? 1 : 2); ticks.appendChild(el); }
+for (let i = 1; i <= 12; i++) { const a = i / 12 * Math.PI * 2, el = document.createElementNS(NS, "text"); el.setAttribute("x", Math.sin(a) * 168); el.setAttribute("y", -Math.cos(a) * 168); el.textContent = i; nums.appendChild(el); }
+const now = new Date(), mins = now.getHours() * 60 + now.getMinutes();
+const open = mins >= 420 && mins < 1260;
+document.getElementById("openState").innerHTML = open ? "Открыто<br>сейчас" : "Скоро<br>откроемся";
+document.getElementById("openTime").textContent = open ? "до 21:00 · ул. Вымышленная" : "с 07:00 · ул. Вымышленная";
+
+/* ========== 5. зёрна ========== */
+function initBeans() {
+  const c = document.getElementById("beans"), g = c.getContext("2d"), sec = document.querySelector(".city");
+  const beans = Array.from({ length: mobile ? 18 : 40 }, () => ({ x: Math.random(), y: Math.random(), z: .3 + Math.random() * .9, r: Math.random() * 6.28, s: (Math.random() - .5) * .01, col: ["#3A2318", "#4D2E1F", "#6B4430"][Math.random() * 3 | 0] }));
+  let visible = false; new IntersectionObserver(([e]) => visible = e.isIntersecting).observe(sec);
+  function size() { c.width = c.clientWidth * DPR; c.height = c.clientHeight * DPR; } size(); addEventListener("resize", size);
+  function bean(b, y) { const w = c.width, R = 26 * b.z * DPR; g.save(); g.translate(b.x * w, y); g.rotate(b.r); g.fillStyle = b.col; g.globalAlpha = .35 + b.z * .5;
+    g.beginPath(); g.ellipse(0, 0, R * .7, R, 0, 0, 6.28); g.fill(); g.strokeStyle = "rgba(10,6,4,.7)"; g.lineWidth = R * .12; g.beginPath(); g.moveTo(0, -R * .85); g.bezierCurveTo(R * .3, -R * .3, -R * .3, R * .3, 0, R * .85); g.stroke(); g.restore(); }
+  (function loop() { requestAnimationFrame(loop); if (!visible) return; const p = progressOf(sec); g.clearRect(0, 0, c.width, c.height);
+    beans.forEach(b => { if (!reduce) b.r += b.s; const y = ((b.y - p * b.z * .9) % 1 + 1) % 1 * c.height * 1.2 - c.height * .1; bean(b, y); }); })();
+}
+
+/* ========== 6. QR карты (декоративный) ========== */
+(function qr() { const c = document.getElementById("qr"), g = c.getContext("2d"), n = 22, s = c.width / n; g.fillStyle = "#120B07";
+  let x = 7; const rnd = () => (x = (x * 9301 + 49297) % 233280) / 233280;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (rnd() > .52) g.fillRect(i * s, j * s, s, s);
+  [[0, 0], [n - 7, 0], [0, n - 7]].forEach(([a, b]) => { g.fillStyle = "#fff"; g.fillRect(a * s, b * s, 7 * s, 7 * s); g.fillStyle = "#120B07"; g.fillRect(a * s, b * s, 7 * s, 7 * s); g.fillStyle = "#fff"; g.fillRect((a + 1) * s, (b + 1) * s, 5 * s, 5 * s); g.fillStyle = "#120B07"; g.fillRect((a + 2) * s, (b + 2) * s, 3 * s, 3 * s); }); })();
+
+/* ========== 7. скролл-сцены ========== */
+const glass = [["Раф лаванда", "280 ₽", "350 мл · варим каждый день · с собой"], ["Эфиопия Гуджи", "890 ₽", "250 г · пачка зерна · медленная обжарка"], ["Айс-матча", "320 ₽", "400 мл · со льдом · на овсяном"]];
+let gi = 0; const gN = document.getElementById("glassName"), gS = document.getElementById("glassSub");
+setInterval(() => { gi = (gi + 1) % glass.length; gN.style.opacity = 0; setTimeout(() => { gN.innerHTML = `<span>${glass[gi][0]}</span><span>${glass[gi][1]}</span>`; gS.textContent = glass[gi][2]; gN.style.opacity = 1; }, 300); }, 3000);
+
+const hours = document.getElementById("hours"), hH = document.getElementById("hHand"), mH = document.getElementById("mHand"), iced = document.getElementById("iced");
+const order = document.getElementById("order"), receipt = document.getElementById("receipt");
+const loyal = document.getElementById("card"), stamps = [...document.querySelectorAll("#stamps i")], bal = document.getElementById("bal"), toast = document.getElementById("toast");
+(function scrollLoop() {
+  requestAnimationFrame(scrollLoop);
+  const ph = progressOf(hours);
+  mH.setAttribute("transform", `rotate(${ph * 720})`); hH.setAttribute("transform", `rotate(${210 + ph * 60})`);
+  iced.setAttribute("transform", `rotate(${reduce ? 0 : Math.sin(ph * Math.PI * 4) * 25})`);
+  const po = progressOf(order);
+  receipt.style.transform = `translateY(${-82 + smooth(clamp(po * 1.25)) * 82}%)`;
+  const pl = clamp((innerHeight - loyal.getBoundingClientRect().top) / (innerHeight * 1.1));
+  const filled = Math.floor(pl * 6.2); stamps.forEach((s, i) => i < 5 && s.classList.toggle("on", i < filled));
+  bal.textContent = Math.round(162 + clamp(pl * 1.3) * 41);
+  toast.style.opacity = pl > .55 ? 1 : .35; toast.style.transform = pl > .55 ? "none" : "translateY(6px)";
+})();
+
+document.fonts.ready.then(() => { try { initCup(); } catch (e) { console.warn(e); } try { initDust(); } catch (e) { console.warn(e); } initBeans(); });
+</script>
+</body>
+</html>

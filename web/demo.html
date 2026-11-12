@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teglo — демо</title>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0E0F12"><link rel="icon" href="/icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icons/icon-180.png">
+<link href="/fonts/fonts.css" rel="stylesheet">
+<style>
+
+/* Демо-стенд: тёмная «студийная» рамка платформы Teglo, внутри — бренд заведения в его собственных цветах.
+   Слева сайт заведения, справа телефон с Telegram-ботом; в режиме владельца — панель аналитики. */
+:root{
+  --bg:#0E0F12; --panel:#16181D; --panel2:#1D2027; --line:rgba(255,255,255,.09); --text:#F2F2EE; --muted:rgba(242,242,238,.6);
+  --svoy:#C6F432; --ink:#0E0F12;
+  --b-bg:#F6F0E8; --b-text:#2B1D14; --b-muted:#6B5646; --b-acc:#A0522D; --b-on:#fff; --b-card:#FFFFFF; --b-dark:#3D2217;
+  --font:"Inter Tight",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:400 15px/1.45 var(--font);-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--svoy);outline-offset:2px}
+.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
+
+/* верхняя панель */
+.bar{position:sticky;top:0;z-index:20;background:rgba(14,15,18,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.bar .in{max-width:1320px;margin:0 auto;padding:12px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.logo{font-weight:800;font-size:20px;letter-spacing:-.04em;text-decoration:none}
+.logo b{color:var(--svoy)}
+.niches{display:flex;gap:4px;margin-left:8px}
+.niches a{padding:7px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:500}
+.niches a.on{background:var(--panel2);color:var(--text)}
+.sp{flex:1}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{padding:7px 14px;border-radius:999px;color:var(--muted);font-weight:500;white-space:nowrap}
+.seg button.on{background:var(--text);color:var(--ink)}
+.seg.tier button.on{background:var(--svoy);color:var(--ink)}
+.cta{background:var(--svoy);color:var(--ink);padding:9px 16px;border-radius:999px;font-weight:700;text-decoration:none;white-space:nowrap}
+
+.wrap{max-width:1320px;margin:0 auto;padding:24px 20px 60px}
+.legend{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:20px;flex-wrap:wrap}
+.legend h1{font-size:clamp(26px,3.4vw,40px);letter-spacing:-.035em;line-height:1.05;font-weight:800}
+.legend p{color:var(--muted);max-width:60ch;margin-top:6px}
+.price{text-align:right}
+.price .p{font-size:28px;font-weight:800;letter-spacing:-.03em}
+.price .f{color:var(--svoy)}
+.demo-note{color:var(--muted);margin-top:4px}
+
+/* гостевой режим */
+.guest{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start}
+.site{background:var(--b-bg);color:var(--b-text);border-radius:22px;overflow:hidden;border:1px solid var(--line)}
+.site .chrome{background:#E7E3DC;display:flex;gap:6px;align-items:center;padding:10px 14px;color:#6b6258}
+.site .chrome i{width:10px;height:10px;border-radius:50%;background:#cfc8bd;display:block}
+.site .chrome span{margin-left:10px;font:12px var(--mono);background:#fff;border-radius:6px;padding:3px 10px;flex:1;max-width:340px}
+.s-hero{padding:46px 40px 40px;position:relative;overflow:hidden;min-height:300px}
+.s-hero h2{font-size:clamp(34px,4.5vw,58px);line-height:.95;letter-spacing:-.045em;font-weight:800;text-transform:uppercase;max-width:12ch;position:relative;z-index:2}
+.s-hero p{margin-top:14px;color:var(--b-muted);max-width:42ch;position:relative;z-index:2}
+.s-hero .btns{display:flex;gap:10px;margin-top:22px;position:relative;z-index:2;flex-wrap:wrap}
+.s-btn{background:var(--b-acc);color:var(--b-on);padding:11px 18px;border-radius:999px;font-weight:600;text-decoration:none;display:inline-block}
+.s-btn.ghost{background:transparent;color:var(--b-text);border:1px solid currentColor}
+.s-sec{padding:28px 40px;border-top:1px solid rgba(0,0,0,.08)}
+.s-sec h3{font-size:20px;letter-spacing:-.02em;margin-bottom:14px}
+.s-items{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.s-item{background:var(--b-card);border-radius:14px;padding:12px;border:1px solid rgba(0,0,0,.06)}
+.s-item .ph{aspect-ratio:1;border-radius:10px;margin-bottom:10px;display:grid;place-items:center}
+.s-item b{display:block;font-size:14px}
+.s-item span{font-family:var(--mono);font-size:12px;color:var(--b-muted)}
+.s-row{display:flex;gap:24px;flex-wrap:wrap;color:var(--b-muted)}
+.s-row b{color:var(--b-text);display:block}
+.wow-layer{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .5s}
+.tier-pro .wow-layer{opacity:1}
+.wow-tag{position:absolute;top:16px;right:16px;z-index:3;background:var(--ink);color:var(--svoy);padding:6px 10px;border-radius:999px;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;display:none}
+.tier-pro .wow-tag{display:block}
+.blob{position:absolute;border-radius:50%;filter:blur(40px);opacity:.55;animation:float 9s ease-in-out infinite alternate}
+@keyframes float{to{transform:translate(40px,-30px) scale(1.15)}}
+.dots{position:absolute;inset:0}
+
+/* телефон */
+.phone{position:sticky;top:84px;width:380px;height:760px;max-height:calc(100vh - 110px);background:#000;border-radius:48px;padding:12px;box-shadow:0 40px 80px -40px rgba(0,0,0,.8);border:1px solid #2a2a2a}
+.scr{height:100%;border-radius:38px;overflow:hidden;background:#17212B;display:flex;flex-direction:column;color:#fff}
+.tg-top{display:flex;align-items:center;gap:10px;padding:16px 16px 10px;background:#232E3C}
+.tg-top .av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff}
+.tg-top b{display:block;font-size:15px}
+.tg-top span{font-size:12px;color:#7d8b99}
+.app{flex:1;overflow-y:auto;background:var(--b-bg);color:var(--b-text);padding:14px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
+.app::-webkit-scrollbar{display:none}
+.tg-bottom{background:#232E3C;padding:10px 14px;display:flex;gap:8px}
+.tg-bottom div{flex:1;background:#2B3A4A;border-radius:10px;padding:9px;text-align:center;font-size:13px;color:#cfd8e2}
+
+.w{background:var(--b-card);border-radius:18px;padding:14px;border:1px solid rgba(0,0,0,.06);position:relative}
+.w h4{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.w h4 small{font:500 10.5px var(--mono);color:var(--b-muted);letter-spacing:.05em;text-transform:uppercase}
+.gcard{background:linear-gradient(140deg,var(--b-dark),var(--b-acc));color:#fff;border-radius:20px;padding:16px;display:grid;gap:10px;border:0}
+.gcard .top{display:flex;justify-content:space-between;align-items:center}
+.gcard .brand{font-weight:800;font-size:18px;letter-spacing:-.03em}
+.gcard .lvl{font:500 11px var(--mono);background:rgba(255,255,255,.18);padding:4px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em}
+.gcard .qr{width:96px;height:96px;background:#fff;border-radius:10px;padding:7px;justify-self:center}
+.gcard .code{text-align:center;font:500 16px var(--mono);letter-spacing:.3em}
+.gcard .bal{display:flex;justify-content:space-between;align-items:baseline}
+.gcard .bal b{font-size:30px;font-weight:800;letter-spacing:-.03em}
+.holo{position:absolute;inset:0;border-radius:20px;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.35) 45%,rgba(160,255,240,.25) 52%,transparent 65%);background-size:250% 100%;animation:holo 4s linear infinite;mix-blend-mode:overlay;pointer-events:none;display:none}
+.tier-pro .holo{display:block}
+@keyframes holo{from{background-position:120% 0}to{background-position:-120% 0}}
+.stamps{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.stamps i{aspect-ratio:1;border-radius:50%;border:1.5px dashed #c9bdb0}
+.stamps i.on{background:var(--b-acc);border:1.5px solid var(--b-acc)}
+.stamps i.gift{border-color:var(--b-acc)}
+.list{display:grid;gap:8px}
+.li{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px}
+.li span{color:var(--b-muted);font-size:12.5px}
+.pill{font:500 10.5px var(--mono);padding:3px 7px;border-radius:999px;background:#EFE6D8;color:var(--b-text);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.msg{background:#EFE6D8;border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:13px;line-height:1.45}
+.msg time{display:block;font:11px var(--mono);color:var(--b-muted);margin-top:4px}
+.prog{height:8px;background:#EFE6D8;border-radius:99px;overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;background:var(--b-acc);border-radius:99px}
+.ach{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ach div{background:#F7F2EA;border-radius:12px;padding:10px 6px;text-align:center;font-size:11.5px;line-height:1.25}
+.ach div svg{display:block;margin:0 auto 6px}
+.ach div.off{opacity:.4}
+.stars{display:flex;gap:6px;justify-content:center;margin:4px 0 8px}
+.stars i{width:30px;height:30px;display:block;background:var(--b-acc);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.stars i.e{background:#e3d8ca}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid #d9cdbf;border-radius:999px;padding:6px 10px;font-size:12.5px}
+.chip.on{background:var(--b-text);color:var(--b-bg);border-color:var(--b-text)}
+.big{font-size:26px;font-weight:800;letter-spacing:-.03em}
+
+/* замок апселла */
+.locked{opacity:.55;filter:grayscale(.6)}
+.lock{position:absolute;inset:0;border-radius:inherit;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;background:rgba(246,240,232,.62);backdrop-filter:blur(2px);font-weight:700;font-size:13px;color:var(--b-text);text-align:center;padding:10px}
+.lock small{font:500 10.5px var(--mono);color:var(--b-muted);text-transform:uppercase;letter-spacing:.06em}
+.adm .lock{background:rgba(22,24,29,.72);color:var(--text)}
+.adm .lock small{color:var(--muted)}
+.lock svg{margin-bottom:2px}
+
+/* режим владельца */
+.adm{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;position:relative;overflow:hidden}
+.card h4{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card h4 small{font:500 10.5px var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.kpi .v{font-size:32px;font-weight:800;letter-spacing:-.03em}
+.kpi .d{font:500 12px var(--mono);color:var(--svoy);margin-top:4px}
+.kpi .d.neg{color:#FF7A6B}
+.kpi .l{color:var(--muted);font-size:13px}
+.a-list{display:grid;gap:10px}
+.a-li{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.a-li:last-child{border-bottom:0;padding-bottom:0}
+.a-li span{color:var(--muted);font-size:13px}
+.tag{font:500 10.5px var(--mono);padding:3px 8px;border-radius:999px;background:var(--panel2);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.tag.ok{background:rgba(198,244,50,.14);color:var(--svoy)}
+.tag.bad{background:rgba(255,122,107,.15);color:#FF7A6B}
+.btn{background:var(--svoy);color:var(--ink);border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px}
+.btn.g{background:var(--panel2);color:var(--text)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:150px;padding-top:10px}
+.bars div{flex:1;height:100%;background:var(--panel2);border-radius:6px 6px 0 0;position:relative}
+.bars div i{position:absolute;inset:auto 0 0 0;background:var(--svoy);border-radius:6px 6px 0 0}
+.bars-l{display:flex;gap:8px;margin-top:6px}
+.bars-l span{flex:1;text-align:center;font:11px var(--mono);color:var(--muted)}
+.heat{display:grid;grid-template-columns:36px repeat(14,1fr);gap:3px;font:10.5px var(--mono);color:var(--muted)}
+.heat i{aspect-ratio:1.4;border-radius:3px;display:block}
+.tgmsg{background:#182533;border-radius:14px;padding:14px;font-size:13.5px;line-height:1.55;color:#e8eef3}
+.tgmsg b{color:#fff}
+.ai{display:grid;gap:10px}
+.ai .q{justify-self:end;background:var(--panel2);padding:10px 12px;border-radius:14px 14px 4px 14px;max-width:85%;font-size:13.5px}
+.ai .a{background:rgba(198,244,50,.08);border:1px solid rgba(198,244,50,.25);padding:12px;border-radius:14px 14px 14px 4px;font-size:13.5px;line-height:1.5}
+.dist{display:grid;gap:10px}
+.dist div{display:grid;grid-template-columns:90px 1fr 40px;gap:10px;align-items:center;font-size:13px}
+.dist .b{height:10px;background:var(--panel2);border-radius:99px;overflow:hidden}
+.dist .b i{display:block;height:100%;background:var(--svoy)}
+.tgl{width:34px;height:20px;border-radius:99px;background:var(--svoy);position:relative;flex:none}
+.tgl::after{content:"";position:absolute;right:3px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--ink)}
+.tgl.off{background:var(--panel2)}
+.tgl.off::after{left:3px;right:auto;background:var(--muted)}
+.compose{background:var(--panel2);border-radius:12px;padding:12px;font-size:13.5px;color:var(--muted);min-height:72px}
+.foot{margin-top:28px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+.hide{display:none!important}
+
+
+/* экран «Домой» */
+.home-btn{border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-weight:600;white-space:nowrap}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:24px;max-width:980px;width:100%;max-height:calc(100vh - 40px);overflow:auto;padding:24px;display:grid;grid-template-columns:auto auto 1fr;gap:28px;align-items:start}
+.mbox h3{font-size:24px;letter-spacing:-.03em;margin-bottom:8px}
+.mbox ol{margin:14px 0 0 18px;display:grid;gap:10px;color:var(--muted)}
+.mbox ol b{color:var(--text)}
+.mini{width:230px;height:470px;background:#000;border-radius:36px;padding:9px;flex:none}
+.mini .s{height:100%;border-radius:28px;overflow:hidden;position:relative}
+.home{background:linear-gradient(160deg,#2b5876,#4e4376);padding:44px 16px 16px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px 10px;align-content:start}
+.home div{text-align:center;font-size:9.5px;color:#fff}
+.home i{display:block;width:44px;height:44px;border-radius:11px;margin:0 auto 4px;background:rgba(255,255,255,.22)}
+.home i.app{display:grid;place-items:center;font:800 15px var(--font);letter-spacing:-.03em;box-shadow:0 0 0 2px rgba(198,244,50,.9);animation:pop 1.6s ease-in-out infinite alternate}
+@keyframes pop{to{transform:scale(1.08)}}
+.home .dock{position:absolute;left:10px;right:10px;bottom:10px;height:62px;border-radius:20px;background:rgba(255,255,255,.2)}
+.standalone{background:var(--b-bg);color:var(--b-text);display:flex;flex-direction:column}
+.standalone .sb{height:34px;display:flex;justify-content:space-between;align-items:end;padding:0 18px 4px;font:600 11px var(--font)}
+.standalone .body{flex:1;padding:10px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.standalone .tabs{display:flex;justify-content:space-around;padding:8px 0 14px;border-top:1px solid rgba(0,0,0,.08);font-size:10px;color:var(--b-muted)}
+.cap{text-align:center;color:var(--muted);font-size:12px;margin-top:8px}
+.x{position:absolute;top:16px;right:20px;font-size:26px;color:var(--muted)}
+@media (max-width:980px){.mbox{grid-template-columns:1fr;justify-items:center}}
+
+@media (max-width:980px){
+  .guest{grid-template-columns:1fr}
+  .phone{position:relative;top:0;margin:0 auto;width:min(380px,100%)}
+  .adm{grid-template-columns:1fr}
+  .adm>*{grid-column:auto!important}
+  .s-items{grid-template-columns:repeat(2,1fr)}
+  .s-hero,.s-sec{padding-left:22px;padding-right:22px}
+  .niches{order:3;width:100%;margin:0}
+  .price{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){.blob,.holo{animation:none}}
+
+
+/* ---------- v2: прокручиваемый сайт ---------- */
+.site{display:flex;flex-direction:column;height:760px;max-height:calc(100vh - 110px);position:sticky;top:84px}
+.site .viewport{flex:1;overflow-y:auto;scroll-behavior:smooth;scrollbar-width:thin}
+.s-nav{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:12px 40px;background:color-mix(in srgb,var(--b-bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,0,0,.06)}
+.s-nav b{font-weight:800;letter-spacing:-.03em;font-size:18px}
+.s-nav span{font-size:13px;color:var(--b-muted);display:flex;gap:16px}
+.s-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.s-card{background:var(--b-card);border-radius:16px;padding:18px;border:1px solid rgba(0,0,0,.06)}
+.s-card b{display:block;font-size:16px;letter-spacing:-.01em;margin-bottom:4px}
+.s-card p{color:var(--b-muted);font-size:14px}
+.s-loyal{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;background:var(--b-dark);color:#fff;border-radius:20px;padding:22px}
+.s-loyal .qrb{width:110px;height:110px;background:#fff;border-radius:12px;padding:8px}
+.s-loyal p{opacity:.8;font-size:14px;margin:6px 0 12px}
+.s-quote{font-size:15px;line-height:1.5}
+.s-quote small{display:block;color:var(--b-muted);margin-top:8px;font-size:12.5px}
+.s-num{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.s-num div{background:var(--b-card);border-radius:16px;padding:16px;border:1px solid rgba(0,0,0,.06)}
+.s-num .ico{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px;min-height:44px;align-content:flex-start}
+.s-num .ico svg{width:18px;height:18px}
+.s-num b{font-size:26px;font-weight:800;letter-spacing:-.03em;display:block}
+.s-num span{color:var(--b-muted);font-size:13px}
+.s-tier{font:500 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--ink);color:var(--svoy);padding:3px 7px;border-radius:999px;margin-left:8px;vertical-align:middle}
+.marq{overflow:hidden;white-space:nowrap;border-block:1px solid rgba(0,0,0,.1);padding:14px 0;background:var(--b-dark);color:var(--b-bg)}
+.marq div{display:inline-block;animation:marq 18s linear infinite;font-weight:800;font-size:28px;letter-spacing:-.03em;text-transform:uppercase}
+@keyframes marq{to{transform:translateX(-50%)}}
+.s-sec .scroll-hint{font:11px var(--mono);color:var(--b-muted)}
+
+/* ---------- вау-эффекты (общие для сайта и библиотеки) ---------- */
+.fx{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.fx canvas{position:absolute;inset:0;width:100%;height:100%}
+.fx-3d{position:absolute;right:8%;top:50%;width:150px;height:200px;transform-style:preserve-3d;animation:spin3d 9s linear infinite;margin-top:-100px}
+.fx-3d i{position:absolute;inset:0;border-radius:18px;display:grid;place-items:center;font:800 26px var(--font);letter-spacing:-.04em;color:#fff;backface-visibility:hidden}
+.fx-3d i:nth-child(2){transform:rotateY(180deg)}
+@keyframes spin3d{from{transform:rotateY(0) rotateX(8deg)}to{transform:rotateY(360deg) rotateX(8deg)}}
+.fx-shadow{position:absolute;right:calc(8% + 15px);bottom:12%;width:120px;height:18px;border-radius:50%;background:rgba(0,0,0,.18);filter:blur(6px)}
+.fx-word{position:absolute;right:-10px;bottom:-26px;font:800 190px/0.8 var(--font);letter-spacing:-.07em;text-transform:uppercase;background:linear-gradient(120deg,var(--b-acc),#E0A458,var(--b-dark),var(--b-acc));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;opacity:.85;animation:wordbg 6s ease-in-out infinite alternate}
+@keyframes wordbg{to{background-position:100% 0}}
+.fx-marq{position:absolute;left:0;right:0;bottom:0;background:var(--b-dark);color:var(--b-bg);white-space:nowrap;overflow:hidden;padding:10px 0;transform:rotate(-3deg) translateY(10px)}
+.fx-marq div{display:inline-block;animation:marq 14s linear infinite;font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:-.02em}
+.fx-receipt{position:absolute;right:8%;top:0;width:170px;background:#FBF8F2;color:#1A1410;font:11px var(--mono);padding:14px 12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.15);animation:print 5s ease-in-out infinite;transform-origin:top}
+.fx-receipt div{display:flex;justify-content:space-between;padding:2px 0}
+.fx-receipt b{display:block;text-align:center;font:800 16px var(--font);margin-bottom:6px}
+@keyframes print{0%{transform:translateY(-100%)}55%,85%{transform:translateY(12%)}100%{transform:translateY(-100%)}}
+.fx-lens{position:absolute;width:150px;height:150px;border-radius:50%;backdrop-filter:blur(2px) saturate(1.6) contrast(1.1);-webkit-backdrop-filter:blur(2px) saturate(1.6) contrast(1.1);background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.55),rgba(255,255,255,.08) 45%,transparent 70%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.6),0 20px 40px rgba(0,0,0,.18);transform:translate(-50%,-50%);left:70%;top:50%;transition:left .25s ease-out,top .25s ease-out}
+.fx-kin{position:absolute;right:6%;top:50%;transform:translateY(-50%);font:800 64px/1 var(--font);letter-spacing:-.05em;text-transform:uppercase;color:var(--b-acc)}
+.fx-kin span{display:inline-block;animation:wave 1.6s ease-in-out infinite}
+@keyframes wave{50%{transform:translateY(-14px) scaleY(1.15)}}
+.fx-holo{position:absolute;right:8%;top:50%;margin-top:-80px;width:250px;height:160px;border-radius:18px;background:linear-gradient(140deg,var(--b-dark),var(--b-acc));color:#fff;padding:16px;font:800 20px var(--font);letter-spacing:-.03em;box-shadow:0 30px 50px -20px rgba(0,0,0,.4);animation:tilt 6s ease-in-out infinite alternate;overflow:hidden}
+.fx-holo::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.45) 45%,rgba(160,255,240,.3) 52%,transparent 65%);background-size:250% 100%;animation:holo 3s linear infinite;mix-blend-mode:overlay}
+.fx-holo small{display:block;font:500 11px var(--mono);opacity:.8;margin-top:62px;letter-spacing:.2em}
+@keyframes tilt{from{transform:perspective(600px) rotateY(-18deg) rotateX(8deg)}to{transform:perspective(600px) rotateY(18deg) rotateX(-6deg)}}
+
+/* ---------- игры ---------- */
+.game-tag{font:500 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--ink);color:var(--svoy);padding:3px 7px;border-radius:999px}
+.wheel-wrap{position:relative;width:200px;height:200px;margin:6px auto 8px}
+.wheel-wrap svg{width:100%;height:100%;transition:transform 3.2s cubic-bezier(.17,.67,.2,1)}
+.wheel-wrap::after{content:"";position:absolute;left:50%;top:-6px;margin-left:-9px;border:9px solid transparent;border-top:16px solid var(--b-text)}
+.scratch{position:relative;height:120px;border-radius:14px;overflow:hidden;background:var(--b-acc);color:#fff;display:grid;place-items:center;text-align:center}
+.scratch b{font-size:22px;letter-spacing:-.02em}
+.scratch canvas{position:absolute;inset:0;width:100%;height:100%;cursor:pointer;touch-action:none}
+.advent{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.advent button{aspect-ratio:1;border-radius:10px;background:#F7E3E8;color:var(--b-text);font-weight:800;font-size:15px;transition:transform .2s}
+.advent button.open{background:var(--b-acc);color:#fff;font-size:10.5px;font-weight:600;line-height:1.15;padding:3px}
+.advent button:not(.open):hover{transform:scale(1.06)}
+.btn-b{display:block;width:100%;background:var(--b-acc);color:#fff;border-radius:12px;padding:10px;font-weight:700;text-align:center}
+
+/* ---------- вкладка «Модули» ---------- */
+.mods{display:grid;grid-template-columns:1fr 520px;gap:24px;align-items:start}
+.mcat{margin-bottom:22px}
+.mcat h3{font-size:18px;letter-spacing:-.02em;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.mcat h3 small{font:500 11px var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.mgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.mod{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;transition:border-color .2s,background .2s}
+.mod:hover{border-color:rgba(198,244,50,.4)}
+.mod.on{border-color:var(--svoy);background:rgba(198,244,50,.06)}
+.mod b{display:block;font-size:14.5px;margin-bottom:4px}
+.mod p{color:var(--muted);font-size:13px;line-height:1.4}
+.mod .t{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.prev{position:sticky;top:84px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px}
+.prev .tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.prev .tabs button{padding:7px 12px;border-radius:999px;background:var(--panel2);color:var(--muted);font-size:13px;font-weight:600}
+.prev .tabs button.on{background:var(--svoy);color:var(--ink)}
+.pv-site{background:var(--b-bg);color:var(--b-text);border-radius:16px;overflow:hidden;position:relative;height:300px;padding:28px}
+.pv-site h2{font-size:34px;line-height:.95;letter-spacing:-.045em;font-weight:800;text-transform:uppercase;max-width:9ch;position:relative;z-index:2}
+.pv-site p{color:var(--b-muted);max-width:24ch;margin-top:10px;font-size:14px;position:relative;z-index:2}
+.pv-desc{margin-top:12px;color:var(--muted);font-size:14px;min-height:42px}
+.pv-desc b{color:var(--text)}
+.pv-game{background:var(--b-bg);color:var(--b-text);border-radius:16px;padding:18px;max-width:300px;margin:0 auto}
+@media (max-width:980px){.mods{grid-template-columns:1fr}.prev{position:relative;top:0}.site{position:relative;top:0;height:640px}.mgrid,.s-grid2,.s-num{grid-template-columns:1fr}.s-nav{padding:12px 22px}}
+@media (prefers-reduced-motion:reduce){.fx *,.marq div{animation:none!important}}
+
+/* HTML-виджеты Telegram */
+.tgw-b{background:linear-gradient(160deg,#fff, #f4f6fb);border:1px solid rgba(0,0,0,.08);border-radius:16px 16px 16px 4px;padding:12px;font-size:13px;color:var(--b-text);box-shadow:0 6px 18px rgba(0,0,0,.06)}
+.tgw-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.tgw-tag{font:500 10px/1 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;background:#2AABEE;color:#fff;padding:4px 7px;border-radius:999px}
+.tgw-h time{font-size:11px;color:var(--b-muted)}
+.tgw-t{display:block;font-size:15px;letter-spacing:-.01em;margin-bottom:8px}
+.tgw-steps{display:flex;gap:6px;margin-bottom:8px}
+.tgw-steps div{flex:1;display:flex;flex-direction:column;gap:4px;font-size:10.5px;color:var(--b-muted);transition:.4s}
+.tgw-steps i{height:8px;width:8px;border-radius:50%;background:#d8d8d8;transition:.4s}
+.tgw-steps .on{color:var(--b-text);font-weight:600}.tgw-steps .on i{background:var(--b-acc);box-shadow:0 0 0 4px color-mix(in srgb,var(--b-acc) 20%,transparent)}
+.tgw-bar{height:4px;border-radius:4px;background:#e6e6e6;overflow:hidden;margin-bottom:8px}.tgw-bar i{display:block;height:100%;background:var(--b-acc);transition:width .9s ease}
+.tgw-l{font-size:12.5px;color:var(--b-muted);padding:2px 0}
+.tgw-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.tgw-btns button{border:0;border-radius:10px;padding:9px 6px;font:600 12px "Inter Tight",sans-serif;background:color-mix(in srgb,#2AABEE 14%,#fff);color:#1b7fb8;cursor:pointer}
+.tgw-btns button:first-child{background:#2AABEE;color:#fff}
+.tgw-done{max-height:0;overflow:hidden;opacity:0;transition:.4s;font-size:12px;color:#1f8a4c}.tgw-done.on{max-height:60px;opacity:1;margin-top:8px}
+.pv-tg{background:#8fb4c9 linear-gradient(160deg,#a9c7d6,#7fa7bf);border-radius:16px;padding:22px 18px;min-height:340px}
+.pv-tgchat{max-width:340px;display:flex;flex-direction:column;gap:10px}
+.pv-tgchat .msg{align-self:flex-start;background:#fff;color:#111;border-radius:14px 14px 14px 4px;padding:8px 12px;font-size:13px}
+.tgw-src{margin-top:10px;padding-top:8px;border-top:1px dashed rgba(0,0,0,.12);font-size:11px;line-height:1.35;color:var(--b-muted)}
+</style></head>
+<body>
+<header class="bar">
+  <div class="in">
+    <a class="logo" href="index.html">teglo<b>.</b></a>
+    <nav class="niches" aria-label="Ниши">
+      <a href="demo.html?n=zerno" data-n="zerno">Кофейня</a>
+      <a href="demo.html?n=dakai" data-n="dakai">Бренд одежды</a>
+      <a href="demo.html?n=pion" data-n="pion">Цветы</a>
+    </nav>
+    <div class="sp"></div>
+    <div class="seg mode" role="tablist" aria-label="Режим">
+      <button data-mode="guest" class="on">Гость</button><button data-mode="admin">Владелец</button><button data-mode="mods">Модули</button>
+    </div>
+    <div class="seg tier" role="tablist" aria-label="Тариф">
+      <button data-tier="1">Старт</button><button data-tier="2" class="on">Основа</button><button data-tier="3">Про</button>
+    </div>
+    <button class="home-btn" id="homeBtn">На экран «Домой»</button>
+    <a class="cta" id="ctaTop" href="#" target="_blank" rel="noopener">Хочу так же</a>
+  </div>
+</header>
+
+<main class="wrap" id="root">
+  <section class="legend">
+    <div>
+      <div class="mono" style="color:var(--svoy)" id="lgKicker"></div>
+      <h1 id="lgTitle"></h1>
+      <p id="lgText"></p>
+    </div>
+    <div class="price">
+      <div class="mono" style="color:var(--muted)">тариф</div>
+      <div class="p" id="tierPrice"></div>
+      <div class="f" id="tierFounder"></div>
+      <div class="demo-note mono">демо · данные вымышленные</div>
+    </div>
+  </section>
+
+  <section id="guestView" class="guest"></section>
+  <section id="adminView" class="adm hide"></section>
+  <section id="modsView" class="mods hide"></section>
+
+  <div class="foot">
+    <span>Серые карточки с замком — что добавится на следующем тарифе. Сайт и бот листаются. Бот в демо — Telegram.</span>
+    <span><a href="https://t.me/tegloru" target="_blank" rel="noopener" style="color:inherit">Канал @tegloru</a> · данные гостей хранятся на серверах в России · документы по 152-ФЗ включены</span>
+  </div>
+</main>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Веб-приложение на экране Домой">
+  <div class="mbox" style="position:relative">
+    <button class="x" id="mx" aria-label="Закрыть">×</button>
+    <div><div class="mini"><div class="s home" id="homeScr"></div></div><div class="cap">иконка на экране «Домой»</div></div>
+    <div><div class="mini"><div class="s standalone" id="saScr"></div></div><div class="cap">открывается как приложение</div></div>
+    <div>
+      <div class="mono" style="color:var(--svoy)">веб-приложение · без App Store</div>
+      <h3 id="mTitle">Сайт становится приложением</h3>
+      <p style="color:var(--muted)">Гость один раз добавляет сайт на экран «Домой» — дальше он открывается с иконкой, во весь экран, без адресной строки. Можно присылать уведомления: «баллы начислены», «дроп через час», «букет в пути».</p>
+      <ol>
+        <li><b>iPhone:</b> открыть сайт в Safari → «Поделиться» → «На экран „Домой“».</li>
+        <li><b>Android:</b> Chrome сам предложит «Установить приложение» — или меню ⋮ → «Добавить на главный экран».</li>
+        <li><b>Уведомления:</b> после установки кнопка «Включить уведомления» в профиле.</li>
+      </ol>
+      <p style="color:var(--muted);margin-top:14px;font-size:13px">Входит во все тарифы.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const TG_LINK = "https://t.me/tegloru_bot?start=lead";           /* сюда — ник для заявок */
+const TIERS = {1:["Старт","1 990 ₽/мес","для основателей — 1 490 ₽ на год"],
+               2:["Основа","4 990 ₽/мес","для основателей — 3 990 ₽ на год"],
+               3:["Про","7 990 ₽/мес","для основателей — 5 990 ₽ на год"]};
+const NEED = t => `Доступно в «${TIERS[t][0]}»`;
+const lockSVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const icon = (d,c="currentColor",sz=26) => `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const IC = {
+  cup:'<path d="M4 8h13v5a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 2v3M12 2v3"/>',
+  fire:'<path d="M12 22c4 0 7-3 7-7 0-4-3-6-4-10-2 3-3 4-5 4 0-2-1-3-2-4-1 3-3 5-3 10 0 4 3 7 7 7z"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  moon:'<path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/>',
+  gift:'<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8S10 3 7.5 4 9 8 12 8zm0 0s2-5 4.5-4S15 8 12 8z"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>',
+  bag:'<path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+  shirt:'<path d="M8 3 3 6l2 4 2-1v12h10V9l2 1 2-4-5-3a4 4 0 0 1-8 0z"/>',
+  flower:'<circle cx="12" cy="9" r="2.5"/><path d="M12 6.5C12 4 10 3 9 4s0 4 3 5c3-1 4-4 3-5s-3 0-3 2.5zM12 11.5c0 2.5 2 3.5 3 2.5s0-4-3-5c-3 1-4 4-3 5s3 0 3-2.5zM12 12v10M12 17c-2-2-5-2-6-1 2 2 4 2 6 1z"/>',
+  heart:'<path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a5 5 0 0 1 3.5 6"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  pin:'<path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>'
+};
+
+/* ---------- вау-эффекты ---------- */
+const FX = [
+  ["particles","Частицы","Поле точек в цветах бренда медленно плывёт за курсором — сайт «дышит»."],
+  ["obj3d","3D-объект","Стакан, флакон или худи вращается в 3D. Можно взять свою модель."],
+  ["word","Фото в слове","Огромное название бренда с живым цветом внутри букв."],
+  ["marq","Бегущая строка","Наклонная лента с акцией или слоганом — классика модных сайтов."],
+  ["receipt","Печатающийся чек","Чек выезжает из принтера: позиции, итого и баллы на карту."],
+  ["lens","Жидкое стекло","Стеклянная линза ездит за курсором и преломляет первый экран."],
+  ["kinetic","Живой текст","Буквы заголовка волной оживают — для дерзких брендов."],
+  ["holo","Голографическая карта","Карта гостя переливается голограммой при наклоне телефона."]
+];
+let fxCurrent = null;
+function fxHTML(kind,c){
+  const word = c.brand.length>6 ? c.brand.slice(0,5) : c.brand;
+  switch(kind){
+    case "particles": return `<div class="fx"><canvas data-fxcanvas></canvas></div>`;
+    case "obj3d": return `<div class="fx"><div class="fx-shadow"></div><div class="fx-3d"><i style="background:linear-gradient(160deg,${c.colors.acc},${c.colors.dark})">${c.brand}</i><i style="background:linear-gradient(160deg,${c.colors.dark},${c.colors.acc})">${c.brand}</i></div></div>`;
+    case "word": return `<div class="fx"><div class="fx-word">${word}</div></div>`;
+    case "marq": { const t=(c.ticker+" ").repeat(6); return `<div class="fx"><div class="fx-marq"><div>${t}${t}</div></div></div>`; }
+    case "receipt": return `<div class="fx"><div class="fx-receipt"><b>${c.brand}</b>${c.items.slice(0,3).map(i=>`<div><span>${i[0]}</span><span>${i[1].replace(' ₽','')}</span></div>`).join('')}<div style="border-top:1px dashed #b9aea3;margin-top:6px;padding-top:6px"><span>+ баллы</span><span>+48</span></div></div></div>`;
+    case "lens": return `<div class="fx"><div class="fx-lens" data-lens></div></div>`;
+    case "kinetic": return `<div class="fx"><div class="fx-kin">${[...word].map((ch,i)=>`<span style="animation-delay:${i*.09}s">${ch}</span>`).join('')}</div></div>`;
+    case "holo": return `<div class="fx"><div class="fx-holo">${c.brand}<small>${c.card.code}</small></div></div>`;
+  }
+  return "";
+}
+let fxRAFs=[];
+function fxStart(root){
+  fxRAFs.forEach(cancelAnimationFrame); fxRAFs=[];
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  root.querySelectorAll("[data-fxcanvas]").forEach(cv=>{
+    const g=cv.getContext("2d"),dpr=Math.min(devicePixelRatio||1,2),W=cv.clientWidth,H=cv.clientHeight; if(!W) return;
+    cv.width=W*dpr;cv.height=H*dpr;g.scale(dpr,dpr);
+    const col=C().colors.acc, pts=Array.from({length:120},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2.4+.6,vx:(Math.random()-.5)*.35,vy:-Math.random()*.45-.1}));
+    let mx=-999,my=-999; cv.parentElement.parentElement.addEventListener("pointermove",e=>{const r=cv.getBoundingClientRect();mx=e.clientX-r.left;my=e.clientY-r.top});
+    const loop=()=>{g.clearRect(0,0,W,H);g.fillStyle=col;pts.forEach(p=>{if(!reduce){p.x+=p.vx;p.y+=p.vy;const dx=p.x-mx,dy=p.y-my,d=Math.hypot(dx,dy);if(d<70){p.x+=dx/d*2;p.y+=dy/d*2}if(p.y<-5){p.y=H+5;p.x=Math.random()*W}}g.globalAlpha=.4;g.beginPath();g.arc(p.x,p.y,p.r,0,7);g.fill()});if(!reduce)fxRAFs.push(requestAnimationFrame(loop))};loop();
+  });
+  root.querySelectorAll("[data-lens]").forEach(l=>{const host=l.closest(".s-hero,.pv-site");host.addEventListener("pointermove",e=>{const r=host.getBoundingClientRect();l.style.left=(e.clientX-r.left)+"px";l.style.top=(e.clientY-r.top)+"px"})});
+}
+
+/* ---------- конфиги ниш ---------- */
+const N = {
+zerno:{
+  brand:"зерно", bot:"@zerno_coffee_bot", url:"zerno.teglo.ru", fx:"particles", ticker:"6-й кофе в подарок ✦ предзаказ без очереди ✦",
+  kicker:"Общепит · кофейня спешелти · Москва, 2 точки", title:"Кофейня «Зерно»",
+  text:"6-й кофе в подарок, кэшбэк баллами, бот вместо приложения. Касса — iiko: в «Основе» баллы начисляются сами.",
+  colors:{bg:"#F6F0E8",text:"#2B1D14",muted:"#6B5646",acc:"#A0522D",dark:"#3D2217",card:"#FFFFFF"},
+  hero:["Кофе для твоего момента","Обжариваем маленькими партиями. Заказ заранее — без очереди, баллы — на карту."],
+  heroBtns:["Меню","Получить карту"], nav:["Меню","Адреса","Карта гостя"],
+  itemsTitle:"Меню", items:[["Эспрессо","150 ₽","#E9DCCB"],["Капучино","220 ₽","#E3CDB2"],["Раф лаванда","280 ₽","#E4D6EA"],["Сырники","320 ₽","#F1DFC0"]],
+  info:[["Адреса","ул. Вымышленная, 1 · Липовая аллея, 7"],["Часы","07:00–21:00"],["Wi-Fi","есть, без пароля"]],
+  wowLink:"zerno-site.html",
+  site2:{promo:[["Двойные баллы по утрам","с 7 до 10 — за каждый кофе ×2"],["Сырники + кофе","комбо за 420 ₽ до 12:00"]],
+         special:["Предзаказ","Закажите в боте за 5 минут до выхода — заберёте без очереди."],
+         reviews:[["Лучший раф на районе, и баллы копятся сами.","Анна, 5 ★ · Яндекс Карты"],["Удобно: заказал в боте и забрал без очереди.","Дмитрий, 5 ★ · 2ГИС"]]},
+  numbers:[["cup","48 000","чашек в год"],["users","1 284","гостя в клубе"],["star","4,8","средняя оценка"]],
+  card:{unit:"баллов", bal:"412", code:"К 4821", stamps:4, stampsTotal:6, stampLabel:"Штампы · 6-й кофе в подарок", level:"Завсегдатай", nextLvl:"Свой"},
+  catalogTitle:"Меню в боте", catalog:[["Капучино 350 мл","220 ₽"],["Флэт уайт","240 ₽"],["Круассан","190 ₽"]],
+  extrasGuest:[
+    {t:2, html:`<h4>Серия визитов <small>неделя 4 из 6</small></h4><div class="prog"><i style="width:66%"></i></div><div class="li" style="margin-top:8px"><span>Загляните до воскресенья — серия не сгорит</span><span class="pill">+1 штамп</span></div>`},
+    {t:2, html:`<h4>Вызов официанта <small>стол 5</small></h4><div class="chips"><span class="chip on">Позвать</span><span class="chip">Счёт</span><span class="chip">Убрать стол</span></div>`},
+    {t:3, html:`<h4>Выбор точки <small>2 точки</small></h4><div class="chips"><span class="chip on">Вымышленная, 1</span><span class="chip">Липовая аллея, 7</span></div>`}
+  ],
+  bubble:{title:"Ваш заказ · №214", steps:["Принят","Готовим","Готов к выдаче"], lines:["Капучино 350 мл","Круассан"], btns:["Я подхожу","Изменить"], done:"Бариста видит: вы будете через 3 мин"},
+  game:{kind:"wheel", title:"Колесо призов", sub:"после 5-го визита", prizes:["Раф","+50","Круассан","×2 баллы","Эспрессо","+100"]},
+  game2:["Коллекция напитков","Попробуйте 6 напитков из меню — седьмой в подарок. Собрано 4 из 6."],
+  ach:[["cup","Первая чашка",1],["fire","Серия 4 недели",1],["moon","Ночная сова",0],["sun","Ранняя пташка",1],["star","Дегустатор",0],["gift","День рождения",0]],
+  msgs:["Давно не виделись 👋 Ваш капучино ждёт: до воскресенья — двойные баллы.","Сегодня день рождения у «Зерна» — раф за полцены по карте."],
+  recap:[["86","капучино за год"],["Раф лаванда","любимый напиток"],["9:10","ваше время"]],
+  admin:{
+    kpi:[["Гостей в базе","1 284","+46 за неделю"],["Визитов за неделю","612","+8%"],["Средний чек","486 ₽","+21 ₽"],["Отзывов","4,8 ★","38 новых"]],
+    pos:{t1:"Кассир сканирует QR гостя и вводит сумму чека в боте — баллы начисляются сразу.",t2:"iiko синхронизирована 2 мин назад · чеки и баллы приходят сами", sys:"iiko"},
+    reviews:[["Анна, 5 ★","Лучший раф на районе","ok"],["Игорь, 3 ★","Долго ждал заказ","bad"],["Мария, 5 ★","Уютно, круассаны свежие","ok"]],
+    triggers:[["День рождения","подарок за 3 дня",1],["«Давно не были» 21 день","двойные баллы",1],["«Давно не были» 45 дней","кофе в подарок",1],["Сгорание баллов","напоминание за 7 дней",0]],
+    segments:["Все с согласием на рассылку · 742","Давно не были · 118","Любят раф · 203"],
+    levels:[["Гость",58],["Завсегдатай",31],["Свой",11]],
+    summary:"<b>Зерно · итоги дня</b><br>Выручка 48 300 ₽ (+6% к прошлому вторнику)<br>Чеков 104 · средний 464 ₽<br>Новых гостей 9 · вернулись 31<br>Отзывы: 4 × 5★, 1 × 3★ — «долго ждал заказ»",
+    niche:[{t:2, title:"Вызовы официанта", sub:"сегодня", html:`<div class="a-list"><div class="a-li"><span>Стол 5 · позвать</span><span class="tag ok">принял Иван · 40 с</span></div><div class="a-li"><span>Стол 2 · счёт</span><span class="tag ok">принял Олег · 1 мин</span></div><div class="a-li"><span>Стол 8 · позвать</span><span class="tag bad">ждёт 3 мин</span></div></div>`}],
+    churn:[["Ольга К.","12 визитов · не была 34 дня"],["Денис П.","8 визитов · 41 день"],["Света М.","15 визитов · 29 дней"]],
+    ai:["Почему во вторник просела выручка?","Во вторник −14% к среднему: утренний пик 8–10 был на 22 чека меньше — на Вымышленной не работала кофемашина №2 (в iiko отмены с 8:12 до 9:40). Вечер в норме. Совет: отправьте утренним гостям двойные баллы до пятницы — это 118 человек."],
+    points:[["Вымышленная, 1","31 200 ₽","+4%"],["Липовая аллея, 7","17 100 ₽","+9%"]],
+    games:[["Колесо призов","крутили 214 раз · вернулись 63%"],["Коллекция напитков","собирают 96 гостей"]],
+    salesTitle:"Продажи по позициям", sales:[["Капуч.",92],["Раф",74],["Флэт",58],["Эспр.",40],["Кр-н",66],["Сырн.",35],["Матча",28]]
+  }
+},
+dakai:{
+  brand:"DAKAI", bot:"@dakai_brand_bot", url:"dakai.teglo.ru", fx:"word", ticker:"Дроп 04 ✦ ограниченный тираж ✦",
+  kicker:"Бренд одежды · streetwear · запуск дропами", title:"Бренд одежды «DAKAI»",
+  text:"Лимитированные дропы, лукбук, клиентская база и рассылки о новинках. Оплата на сайте — следующим модулем.",
+  colors:{bg:"#EDEDE9",text:"#111111",muted:"#5B5B57",acc:"#111111",dark:"#1B1B1B",card:"#FFFFFF"},
+  hero:["Дроп 04 · Северный ветер","Ограниченный тираж. Ранний доступ — у клиентов уровня «Свой»."],
+  heroBtns:["Смотреть дроп","Ранний доступ"], nav:["Дроп","Лукбук","Шоурум"],
+  itemsTitle:"Дроп 04", items:[["Худи «Ветер»","6 900 ₽","#D9D9D2"],["Карго «Тундра»","7 400 ₽","#CFCFC6"],["Лонгслив","3 900 ₽","#E2E2DA"],["Шапка","1 900 ₽","#C9CCD1"]],
+  info:[["Шоурум","Покровка, 12 · по записи"],["Доставка","СДЭК по России"],["Обмен","14 дней"]],
+  wowLink:null,
+  site2:{promo:[["Ранний доступ","уровень «Свой» видит дроп на сутки раньше"],["Промокод на первый заказ","−10% за подписку на бота"]],
+         special:["До дропа 05","02 : 14 : 37 — оставьте контакт в боте, пришлём ссылку первыми."],
+         reviews:[["Худи плотное, сел идеально. Жду следующий дроп.","Кирилл, 5 ★"],["Пришло уведомление о размере — успела взять.","Лиза, 5 ★"]]},
+  numbers:[["shirt","12 000","вещей продано"],["users","3 912","клиентов в базе"],["fire","4 из 5","дропов sold out"]],
+  card:{unit:"баллов", bal:"1 240", code:"D 0731", stamps:0, stampsTotal:0, stampLabel:"", level:"Свой", nextLvl:"Свой+"},
+  catalogTitle:"Каталог в боте", catalog:[["Худи «Ветер» · M, L","6 900 ₽"],["Карго «Тундра» · S–XL","7 400 ₽"],["Оплата на сайте — скоро","модуль 2-й волны"]],
+  extrasGuest:[
+    {t:2, html:`<h4>До дропа 05 <small>ранний доступ</small></h4><div class="big" data-cd>02 : 14 : 37</div><div class="li" style="margin-top:6px"><span>Уровень «Свой» — доступ на 24 часа раньше</span><span class="pill">вы в списке</span></div>`},
+    {t:2, html:`<h4>Сообщить о размере <small>лист ожидания</small></h4><div class="li"><span>Худи «Ветер» · XL</span><span class="pill">ждём</span></div><div class="li" style="margin-top:6px"><span>Карго «Тундра» · S</span><span class="pill">пришло</span></div>`},
+    {t:2, html:`<h4>Мои заказы и избранное</h4><div class="li"><span>Худи «Туман» · заказ от 12 окт</span><span class="pill">получен</span></div><div class="li" style="margin-top:6px"><span>В избранном: 3 вещи</span><span class="pill">2 в наличии</span></div>`},
+    {t:2, html:`<h4>Промокоды</h4><div class="li"><span>DAKAI10 · −10% на первый заказ</span><span class="pill">активен</span></div>`},
+    {t:3, html:`<h4>Приведи друга <small>реферальная</small></h4><div class="li"><span>Другу −10% на первый заказ, вам 500 баллов</span><span class="pill">2 друга</span></div>`}
+  ],
+  bubble:{title:"Дроп 05 · Худи «Ветер»", steps:["Ранний доступ","Открыт","Осталось 12 шт"], lines:["Размер: S · M · L · XL","6 900 ₽"], btns:["Отложить XL","В избранное"], done:"XL отложен на 15 минут — оплатите по ссылке в боте"},
+  game:{kind:"scratch", title:"Скретч-карта дропа", sub:"сотри и забери", prize:"−15% на дроп 05"},
+  game2:["Охота за кодом","В сторис бренда спрятан код — введите его в боте и получите ранний доступ."],
+  ach:[["bag","Первый заказ",1],["fire","3 дропа подряд",1],["star","Коллекционер",0],["users","Привёл друга",1],["gift","День рождения",0],["heart","Отзыв с фото",0]],
+  msgs:["Дроп 05 через 3 дня. У вас ранний доступ — завтра в 12:00 пришлём ссылку.","Худи «Ветер» в размере XL снова в наличии — отложили для вас на 24 часа."],
+  recap:[["7","вещей за год"],["Худи","ваш тип вещей"],["4 из 5","дропов с вами"]],
+  admin:{
+    kpi:[["Клиентов в базе","3 912","+380 за дроп"],["Заказов за месяц","514","+31%"],["Средний чек","8 240 ₽","+640 ₽"],["Повторные покупки","27%","+4 п.п."]],
+    pos:{t1:"Заказы приходят заявкой в бот — вы подтверждаете вручную. Каталог ведёте в админке.",t2:"МойСклад синхронизирован 5 мин назад · остатки и цены обновляются сами", sys:"МойСклад"},
+    reviews:[["Кирилл, 5 ★","Худи плотное, сел идеально","ok"],["Лиза, 4 ★","Доставка 4 дня","ok"],["Артём, 3 ★","Размер маломерит","bad"]],
+    triggers:[["Брошенный выбор","напомнить через 24 ч",1],["Пришёл размер","лист ожидания",1],["Новый дроп","уровню «Свой» на сутки раньше",1],["День рождения","−15% неделю",0]],
+    segments:["Все с согласием · 2 940","Брали худи · 812","Не покупали 90 дней · 604"],
+    levels:[["Новичок",61],["Постоянный",28],["Свой",11]],
+    summary:"<b>DAKAI · итоги дня</b><br>Заказов 23 на 186 400 ₽<br>Лист ожидания: XL худи — 41 человек<br>Дроп 05: 312 в раннем доступе<br>Отзывы: 3 × 5★, 1 × 3★ — «маломерит»",
+    niche:[
+      {t:2, title:"База клиентов", sub:"сегменты", html:`<div class="a-list"><div class="a-li"><div><b style="font-weight:600">Мария Л. · Свой</b><br><span>7 заказов · 52 400 ₽ · любит худи, размер S</span></div><span class="tag ok">VIP</span></div><div class="a-li"><div><b style="font-weight:600">Тимур К. · Постоянный</b><br><span>3 заказа · 19 800 ₽ · ждёт карго L</span></div><span class="tag">лист ожидания</span></div><div class="a-li"><div><b style="font-weight:600">Ника В. · Новичок</b><br><span>1 заказ · бросила корзину вчера</span></div><span class="tag bad">напомнить</span></div></div>`},
+      {t:2, title:"Продажи по дропам", sub:"выручка", html:`<div class="dist"><div><span>Дроп 02</span><span class="b"><i style="width:48%"></i></span><span>1,2 м</span></div><div><span>Дроп 03</span><span class="b"><i style="width:70%"></i></span><span>1,8 м</span></div><div><span>Дроп 04</span><span class="b"><i style="width:100%"></i></span><span>2,6 м</span></div></div>`}
+    ],
+    churn:[["Никита Р.","5 заказов · не покупал 120 дней"],["Аня Д.","3 заказа · 98 дней"],["Глеб В.","4 заказа · 105 дней"]],
+    ai:["Что докупить к дропу 05?","В дропе 04 худи XL закончились на 2-й день, в листе ожидания 41 человек — это ~280 тыс. ₽ упущенной выручки. Карго S и M продались на 92%, L — на 54%. Совет: худи XL ×2 к прошлому тиражу, карго L — тираж −30%."],
+    points:[["Онлайн","148 200 ₽","+12%"],["Шоурум Покровка","38 200 ₽","+3%"]],
+    games:[["Скретч-карта","стёрли 1 120 раз · 18% купили с кодом"],["Охота за кодом","нашли 340 человек"]],
+    salesTitle:"Продажи по моделям", sales:[["Худи",96],["Карго",78],["Лонг",54],["Шапка",42],["Футб.",61],["Ветр.",30],["Носки",22]]
+  }
+},
+pion:{
+  brand:"Пион и Ко", bot:"@pion_flowers_bot", url:"pion.teglo.ru", fx:"particles", ticker:"Доставка ко времени ✦ напомним о дате ✦",
+  kicker:"Цветы · мастерская · доставка по Москве ко времени", title:"Мастерская «Пион и Ко»",
+  text:"Букеты с доставкой в нужный час, напоминания о важных датах, подписка на цветы и баллы за каждый заказ.",
+  colors:{bg:"#FFF1F3",text:"#3A1420",muted:"#7A4E5A",acc:"#C2185B",dark:"#5A1530",card:"#FFFFFF"},
+  hero:["Цветы, которые помнят даты","Привезём ко времени — и напомним, когда пора снова."],
+  heroBtns:["Букеты","Напомнить о дате"], nav:["Букеты","Доставка","Подписка"],
+  itemsTitle:"Букеты недели", items:[["«Утро»","3 900 ₽","#F8D7DF"],["Пионы 15 шт","5 400 ₽","#F4C2CF"],["«Сад»","4 600 ₽","#E9E1C9"],["Моно-тюльпаны","2 900 ₽","#F6DCE0"]],
+  info:[["Мастерская","Садовая, 3"],["Доставка","ко времени, интервал 1 час"],["Открытка","бесплатно"]],
+  wowLink:null,
+  site2:{promo:[["Подписка на цветы","свежий букет каждую пятницу — от 2 400 ₽"],["Напомним о дате","за 3 дня до дня рождения мамы"]],
+         special:["Доставка ко времени","Выберите интервал в 1 час — курьер напишет в бот, когда будет рядом."],
+         reviews:[["Привезли минута в минуту, мама в восторге.","Олег, 5 ★ · Яндекс Карты"],["Бот сам напомнил про годовщину. Спасли.","Вика, 5 ★ · 2ГИС"]]},
+  numbers:[["flower","12 000","букетов подарено"],["heart","1 940","дат помним"],["clock","98%","доставок вовремя"]],
+  card:{unit:"баллов", bal:"860", code:"П 2209", stamps:0, stampsTotal:0, stampLabel:"", level:"Любимый клиент", nextLvl:"VIP"},
+  catalogTitle:"Букеты в боте", catalog:[["«Утро» · 25 стеблей","3 900 ₽"],["Пионы 15 шт","5 400 ₽"],["Оплата на сайте — скоро","модуль 2-й волны"]],
+  extrasGuest:[
+    {t:2, html:`<h4>Доставка <small>интервал 1 час</small></h4><div class="chips"><span class="chip">10–11</span><span class="chip on">13–14</span><span class="chip">17–18</span><span class="chip">19–20</span></div>`},
+    {t:2, html:`<h4>Важные даты <small>напомним за 3 дня</small></h4><div class="li"><span>Мама · день рождения</span><span class="pill">14 дек</span></div><div class="li" style="margin-top:6px"><span>Годовщина</span><span class="pill">3 фев</span></div>`},
+    {t:2, html:`<h4>Подписка на цветы <small>каждую пятницу</small></h4><div class="li"><span>Сезонный букет · 2 400 ₽ × 4</span><span class="pill">активна</span></div>`},
+    {t:3, html:`<h4>Конструктор букета</h4><div class="chips"><span class="chip on">Пионы</span><span class="chip">Розы</span><span class="chip on">Эвкалипт</span><span class="chip">Крафт</span><span class="chip on">Лента</span></div><div class="li" style="margin-top:8px"><span>Итого</span><b>4 850 ₽</b></div>`}
+  ],
+  bubble:{title:"Букет «Утро» для мамы", steps:["Собран","В пути","Доставлен"], lines:["Курьер Алексей · 13:20","Открытка: «С днём рождения!»"], btns:["Позвонить курьеру","Фото букета"], done:"Курьер получил: позвонит за 5 минут"},
+  game:{kind:"advent", title:"Адвент к 8 Марта", sub:"окошко в день", prizes:["−10%","Открытка","+100","Мимоза","−15%","Доставка 0 ₽","+200","Тюльпан"]},
+  game2:["Букет-сюрприз","Раз в месяц — букет на выбор флориста с секретным бонусом внутри."],
+  ach:[["flower","Первый букет",1],["heart","Не забыл маму",1],["gift","5 праздников",0],["clock","Подписчик",1],["star","Отзыв с фото",0],["users","Привёл друга",0]],
+  msgs:["Через 3 дня день рождения мамы 🌸 Собрать её любимые пионы к 13:00?","Пятничный букет в пути, курьер будет в 13:20."],
+  recap:[["14","букетов за год"],["Пионы","любимые цветы"],["0","забытых дат"]],
+  admin:{
+    kpi:[["Клиентов в базе","2 106","+64 за неделю"],["Заказов за неделю","188","+12%"],["Средний чек","4 380 ₽","+220 ₽"],["Дат в календаре","1 940","напоминаний: 37"]],
+    pos:{t1:"Заказы приходят заявкой в бот — флорист подтверждает и ставит слот доставки.",t2:"Posiflora синхронизирована · заказы и остатки обновляются сами", sys:"Posiflora"},
+    reviews:[["Олег, 5 ★","Привезли минута в минуту","ok"],["Вика, 5 ★","Букет как на фото","ok"],["Таня, 3 ★","Курьер опоздал на 20 мин","bad"]],
+    triggers:[["Важная дата","напомнить за 3 дня",1],["8 марта / 14 февраля","рассылка за неделю",1],["Подписка","сборка по пятницам",1],["Давно не заказывали","−10% на букет",0]],
+    segments:["Все с согласием · 1 560","Даты в декабре · 312","Подписчики · 74"],
+    levels:[["Новый",54],["Постоянный",34],["Любимый клиент",12]],
+    summary:"<b>Пион и Ко · итоги дня</b><br>Заказов 31 на 132 600 ₽<br>Доставлено вовремя 29 из 31<br>Напоминаний о датах 12 → заказали 7<br>Подписки: 74 активных",
+    niche:[{t:2, title:"Доставки на сегодня", sub:"по слотам", html:`<div class="a-list"><div class="a-li"><span>10–11 · 6 заказов</span><span class="tag ok">в пути</span></div><div class="a-li"><span>13–14 · 9 заказов</span><span class="tag">сборка</span></div><div class="a-li"><span>19–20 · 11 заказов</span><span class="tag bad">нужен курьер</span></div></div>`}],
+    churn:[["Павел Л.","9 заказов · не заказывал 70 дней"],["Ира С.","6 заказов · 64 дня"],["Марина Т.","11 заказов · 58 дней"]],
+    ai:["Сколько пионов закупить на декабрь?","В календаре клиентов 312 дат в декабре; в прошлом году по напоминаниям заказывали 58%. Пионы выбирают в 41% таких заказов, а в декабре корпоративы дают +34%. Совет: ~1 900 стеблей, из них 60% — к 20–28 декабря."],
+    points:[["Садовая, 3","92 400 ₽","+10%"],["Онлайн","40 200 ₽","+15%"]],
+    games:[["Адвент к 8 Марта","открывали 2 300 раз · 31% заказали"],["Букет-сюрприз","148 подписчиков"]],
+    salesTitle:"Продажи по букетам", sales:[["Пионы",94],["Утро",72],["Сад",58],["Тюльп.",47],["Розы",66],["Моно",38],["Подп.",30]]
+  }
+}};
+
+/* ---------- состояние ---------- */
+const qs=new URLSearchParams(location.search);
+let niche=N[qs.get("n")]?qs.get("n"):"zerno";
+let mode=["guest","admin","mods"].includes(qs.get("m"))?qs.get("m"):"guest";
+let tier=+qs.get("t")||2;
+let modFx=null, prevTab="fx";
+const C=()=>N[niche];
+
+function qrSVG(seed){let x=seed,s='';const r=()=>(x=(x*9301+49297)%233280)/233280;const n=21;
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){const f=(i<7&&j<7)||(i>n-8&&j<7)||(i<7&&j>n-8);if(f){const ii=i<7?i:i-(n-7),jj=j<7?j:j-(n-7);if(ii===0||ii===6||jj===0||jj===6||(ii>1&&ii<5&&jj>1&&jj<5))s+=`<rect x="${j}" y="${i}" width="1" height="1"/>`}else if(r()>.52)s+=`<rect x="${j}" y="${i}" width="1" height="1"/>`}
+  return `<svg viewBox="0 0 ${n} ${n}" width="100%" height="100%" fill="#111" shape-rendering="crispEdges">${s}</svg>`}
+function wrapLock(html,need,cls="w"){const locked=tier<need;return `<div class="${cls} ${locked?'locked':''}">${html}${locked?`<div class="lock">${lockSVG}${NEED(need)}<small>${TIERS[need][1]}</small></div>`:''}</div>`}
+function secLock(html,need){const locked=tier<need;return `<div class="s-sec" style="position:relative">${locked?`<div class="locked">${html}</div><div class="lock" style="border-radius:0">${lockSVG}${NEED(need)}<small>${TIERS[need][1]}</small></div>`:html}</div>`}
+
+/* ---------- игры ---------- */
+function gameHTML(g){
+  if(g.kind==="wheel"){const n=g.prizes.length,seg=360/n,cols=["var(--b-acc)","#E9DCCB"];let p='';
+    g.prizes.forEach((pr,i)=>{const a0=(i*seg-90)*Math.PI/180,a1=((i+1)*seg-90)*Math.PI/180,x0=100+95*Math.cos(a0),y0=100+95*Math.sin(a0),x1=100+95*Math.cos(a1),y1=100+95*Math.sin(a1),am=((i+.5)*seg-90)*Math.PI/180;
+      p+=`<path d="M100 100 L${x0} ${y0} A95 95 0 0 1 ${x1} ${y1}Z" fill="${cols[i%2]}"/><text x="${100+60*Math.cos(am)}" y="${100+60*Math.sin(am)}" fill="${i%2?'var(--b-text)':'#fff'}" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="middle" transform="rotate(${(i+.5)*seg} ${100+60*Math.cos(am)} ${100+60*Math.sin(am)})">${pr}</text>`});
+    return `<h4>${g.title} <span class="game-tag">после запуска</span></h4><div class="wheel-wrap"><svg viewBox="0 0 200 200" data-wheel><circle cx="100" cy="100" r="98" fill="var(--b-dark)"/>${p}<circle cx="100" cy="100" r="14" fill="var(--b-dark)"/></svg></div><button class="btn-b" data-spin>Крутить</button><div class="li" style="margin-top:8px;justify-content:center"><span data-wres>${g.sub}</span></div>`}
+  if(g.kind==="scratch") return `<h4>${g.title} <span class="game-tag">после запуска</span></h4><div class="scratch"><div><b>${g.prize}</b><div style="font-size:12px;opacity:.8">код DROP05-K7</div></div><canvas data-scratch></canvas></div><div class="li" style="margin-top:8px;justify-content:center"><span>${g.sub} — проведите пальцем</span></div>`;
+  if(g.kind==="advent") return `<h4>${g.title} <span class="game-tag">после запуска</span></h4><div class="advent">${g.prizes.map((p,i)=>`<button data-adv="${p}">${i+1}</button>`).join('')}</div><div class="li" style="margin-top:8px;justify-content:center"><span>${g.sub} — нажмите на окошко</span></div>`;
+  return "";
+}
+function gameStart(root){
+  root.querySelectorAll("[data-spin]").forEach(b=>{let rot=0;b.onclick=()=>{const svg=root.querySelector("[data-wheel]"),g=C().game,n=g.prizes.length,k=Math.floor(Math.random()*n);rot+=360*5+(360-(k+.5)*360/n)-(rot%360);svg.style.transform=`rotate(${rot}deg)`;setTimeout(()=>{root.querySelector("[data-wres]").textContent="Выпало: "+g.prizes[k]},3200)}});
+  root.querySelectorAll("[data-scratch]").forEach(cv=>{const g=cv.getContext("2d"),dpr=Math.min(devicePixelRatio||1,2),W=cv.clientWidth,H=cv.clientHeight;if(!W)return;cv.width=W*dpr;cv.height=H*dpr;g.scale(dpr,dpr);g.fillStyle="#BDBDB6";g.fillRect(0,0,W,H);g.fillStyle="#9a9a93";g.font="700 15px Inter Tight, sans-serif";g.textAlign="center";g.fillText("СОТРИ МЕНЯ",W/2,H/2+5);g.globalCompositeOperation="destination-out";let down=false;const sc=e=>{const r=cv.getBoundingClientRect();g.beginPath();g.arc(e.clientX-r.left,e.clientY-r.top,18,0,7);g.fill()};cv.onpointerdown=e=>{down=true;sc(e)};cv.onpointermove=e=>{if(down)sc(e)};addEventListener("pointerup",()=>down=false)});
+  root.querySelectorAll("[data-adv]").forEach(b=>b.onclick=()=>{b.classList.add("open");b.textContent=b.dataset.adv});
+}
+
+/* ---------- HTML-виджет в сообщении Telegram ---------- */
+function bubbleSrc(){
+  if(niche==="zerno") return tier>=2?"Статус приходит из iiko: бариста отмечает «приготовлено» на кассе или кухонном экране, как обычно.":"Статус ставит бариста: кнопки «Готовим» / «Готово» в рабочем чате. В «Основе» — из iiko сам.";
+  if(niche==="dakai") return "Наличие и размеры — из МойСклад. Отложенная вещь резервируется автоматически.";
+  return "Статус ставят флорист и курьер кнопками в рабочем чате — без отдельного приложения.";
+}
+function bubbleHTML(c){const b=c.bubble;
+  return `<div class="tgw-b" data-live><div class="tgw-h"><span class="tgw-tag">виджет в сообщении</span><time>обновляется сам</time></div>
+  <b class="tgw-t">${b.title}</b>
+  <div class="tgw-steps">${b.steps.map((x,i)=>`<div data-st="${i}" class="${i===0?'on':''}"><i></i><span>${x}</span></div>`).join('')}</div>
+  <div class="tgw-bar"><i data-bar style="width:20%"></i></div>
+  ${b.lines.map(l=>`<div class="tgw-l">${l}</div>`).join('')}
+  <div class="tgw-btns">${b.btns.map((x,i)=>`<button ${i===0?'data-bact':''}>${x}</button>`).join('')}</div>
+  <div class="tgw-done" data-bdone>${b.done}</div>
+  <div class="tgw-src">${bubbleSrc()}</div></div>`}
+let liveT=null;
+function bubbleStart(root){clearInterval(liveT);const el=root.querySelector("[data-live]");if(!el)return;let k=0;
+  const step=()=>{k=(k+1)%4;el.querySelectorAll("[data-st]").forEach(d=>d.classList.toggle("on",+d.dataset.st<=Math.min(k,2)));el.querySelector("[data-bar]").style.width=[20,55,100,100][k]+"%"};
+  liveT=setInterval(step,2200);
+  const a=el.querySelector("[data-bact]");if(a)a.onclick=()=>{el.querySelector("[data-bdone]").classList.add("on");a.textContent="✓ "+a.textContent}}
+
+/* ---------- гость ---------- */
+function renderGuest(){
+  const c=C(),k=c.card,s2=c.site2;
+  const items=`<div class="s-sec" id="s-items"><h3>${c.itemsTitle}</h3><div class="s-items">${c.items.map(i=>`<div class="s-item"><div class="ph" style="background:${i[2]}"></div><b>${i[0]}</b><span>${i[1]}</span></div>`).join('')}</div></div>`;
+  const loyal=`<div class="s-loyal"><div class="qrb">${qrSVG(niche.length*577)}</div><div><b style="font-size:20px;letter-spacing:-.02em">Карта гостя в Telegram</b><p>${k.stampsTotal?k.stampLabel:'Баллы за каждую покупку, уровни и ранний доступ'} — без приложения.</p><a class="s-btn" href="#" style="background:#fff;color:var(--b-dark)">Получить карту</a></div></div>`;
+  const promo=`<h3>Акции</h3><div class="s-grid2">${s2.promo.map(p=>`<div class="s-card"><b>${p[0]}</b><p>${p[1]}</p></div>`).join('')}</div>`;
+  const special=`<div class="s-card" style="background:var(--b-dark);color:#fff;border:0"><b>${s2.special[0]}</b><p style="color:rgba(255,255,255,.8)">${s2.special[1]}</p></div>`;
+  const reviews=`<h3>Отзывы</h3><div class="s-grid2">${s2.reviews.map(r=>`<div class="s-card s-quote">«${r[0]}»<small>${r[1]}</small></div>`).join('')}</div>`;
+  const numbers=`<h3>Наши цифры <span class="s-tier">Про</span></h3><div class="s-num">${c.numbers.map(n=>`<div><div class="ico">${Array.from({length:8},()=>icon(IC[n[0]],"var(--b-acc)",18)).join('')}</div><b>${n[1]}</b><span>${n[2]}</span></div>`).join('')}</div>`;
+  const marq=`<div class="marq"><div>${(c.ticker+" ").repeat(8)}</div></div>`;
+  const game=`<h3>Игра для гостей <span class="s-tier">Про</span></h3><div class="s-grid2"><div class="s-card"><b>${c.game.title}</b><p>${c.game.sub}. Призы выбирает система по правилам акции — честно и с учётом закона.</p></div><div class="s-card"><b>${c.game2[0]}</b><p>${c.game2[1]}</p></div></div>`;
+
+  const site=`
+  <div class="site">
+    <div class="chrome"><i></i><i></i><i></i><span>${c.url}</span></div>
+    <div class="viewport">
+      <div class="s-nav"><b>${c.brand}</b><span>${c.nav.map(x=>`<a href="#" style="text-decoration:none">${x}</a>`).join('')}</span></div>
+      <div class="s-hero">
+        ${tier>=3?fxHTML(modFx||c.fx,c):''}
+        <span class="wow-tag">вау-дизайн</span>
+        <div class="mono" style="color:var(--b-acc);position:relative;z-index:2">// ${c.brand}</div>
+        <h2 style="margin-top:10px">${c.hero[0]}</h2>
+        <p>${c.hero[1]}</p>
+        <div class="btns"><a class="s-btn" href="#">${c.heroBtns[0]}</a><a class="s-btn ghost" href="#">${c.heroBtns[1]}</a>
+        ${tier>=3&&c.wowLink?`<a class="s-btn" style="background:#0E0F12;color:#C6F432" href="${c.wowLink}" target="_blank" rel="noopener">Вау-сайт целиком ↗</a>`:''}</div>
+      </div>
+      ${tier>=3?marq:''}
+      ${items}
+      ${secLock(loyal,2)}
+      ${secLock(promo,2)}
+      ${secLock(special,2)}
+      ${secLock(reviews,2)}
+      ${tier>=3?`<div class="s-sec">${numbers}</div><div class="s-sec">${game}</div>`:secLock(numbers,3)}
+      <div class="s-sec"><div class="s-row">${c.info.map(i=>`<div><span class="mono">${i[0]}</span><b>${i[1]}</b></div>`).join('')}</div></div>
+      <div class="s-sec" style="font-size:12.5px;color:var(--b-muted)">Политика конфиденциальности · Согласие на обработку ПДн · Cookie · Реквизиты</div>
+    </div>
+  </div>`;
+
+  const b=[];
+  b.push(`<div class="w gcard" style="position:relative"><div class="holo"></div><div class="top"><span class="brand">${c.brand}</span><span class="lvl">${tier>=2?k.level:'карта гостя'}</span></div><div class="qr">${qrSVG(niche.length*977)}</div><div class="code">${k.code}</div><div class="bal"><span class="mono" style="opacity:.75">${k.unit}</span><b>${k.bal}</b></div></div>`);
+  b.push(wrapLock(`<h4>Новое в Telegram <small>HTML-виджет</small></h4>${bubbleHTML(c)}`,2));
+  if(k.stampsTotal) b.push(`<div class="w"><h4>${k.stampLabel}</h4><div class="stamps">${Array.from({length:k.stampsTotal},(_,i)=>`<i class="${i<k.stamps?'on':''} ${i===k.stampsTotal-1?'gift':''}"></i>`).join('')}</div></div>`);
+  b.push(`<div class="w"><h4>${c.catalogTitle}</h4><div class="list">${c.catalog.map(i=>`<div class="li"><span style="color:var(--b-text)">${i[0]}</span><b>${i[1]}</b></div>`).join('')}</div></div>`);
+  b.push(`<div class="w"><h4>Как вам у нас?</h4><div class="stars"><i></i><i></i><i></i><i></i><i class="e"></i></div><div class="li"><span>4–5★ — предложим отзыв на Яндекс Картах и в 2ГИС</span></div></div>`);
+  b.push(wrapLock(`<h4>Уровень <small>до «${k.nextLvl}» 3 визита</small></h4><div class="prog"><i style="width:72%"></i></div>`,2));
+  c.extrasGuest.forEach(e=>b.push(wrapLock(e.html,e.t)));
+  b.push(wrapLock(`<h4>Достижения <small>3 из 6</small></h4><div class="ach">${c.ach.map(a=>`<div class="${a[2]?'':'off'}">${icon(IC[a[0]],'var(--b-acc)')}${a[1]}</div>`).join('')}</div>`,2));
+  b.push(wrapLock(`<h4>Сообщения от ${c.brand} <small>рассылки и триггеры</small></h4><div class="list">${c.msgs.map((m,i)=>`<div class="msg">${m}<time>${i?'вчера':'сегодня, 12:04'}</time></div>`).join('')}</div>`,2));
+  b.push(wrapLock(`<h4>Карта в Wallet <small>скоро</small></h4><div class="li"><span>Карта на экране блокировки iPhone</span><span class="pill">+ Wallet</span></div>`,2));
+  b.push(wrapLock(gameHTML(c.game),3));
+  b.push(wrapLock(`<h4>${c.game2[0]} <span class="game-tag">после запуска</span></h4><div class="li"><span>${c.game2[1]}</span></div>`,3));
+  b.push(wrapLock(`<h4>Твой год с ${c.brand}</h4><div class="list">${c.recap.map(r=>`<div class="li"><b class="big" style="font-size:22px">${r[0]}</b><span>${r[1]}</span></div>`).join('')}</div>`,3));
+
+  const phone=`<div class="phone"><div class="scr">
+    <div class="tg-top"><div class="av" style="background:var(--b-acc)">${c.brand[0].toUpperCase()}</div><div><b>${c.brand}</b><span>бот · ${c.bot}</span></div></div>
+    <div class="app">${b.join('')}</div>
+    <div class="tg-bottom"><div>Карта</div><div>${niche==='zerno'?'Меню':'Каталог'}</div><div>Профиль</div></div></div></div>`;
+  const v=document.getElementById("guestView"); v.innerHTML=site+phone; fxStart(v); if(tier>=3) gameStart(v); if(tier>=2) bubbleStart(v);
+}
+
+/* ---------- владелец ---------- */
+function renderAdmin(){
+  const a=C().admin,L=(h,n,c)=>wrapLock(h,n,c),o=[];
+  a.kpi.forEach(k=>o.push(`<div class="card kpi c3"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="d">${k[2]}</div></div>`));
+  o.push(`<div class="card c6"><h4>Касса и начисления <small>${tier>=2?'интеграция':'свой учёт'}</small></h4><div class="a-li"><span>${tier>=2?a.pos.t2:a.pos.t1}</span><span class="tag ${tier>=2?'ok':''}">${tier>=2?'авто':'вручную'}</span></div>${tier<2?`<div class="a-li" style="margin-top:10px"><span>В «Основе» — автоматически через ${a.pos.sys}</span><span class="tag">апгрейд</span></div>`:''}</div>`);
+  o.push(`<div class="card c6"><h4>Отзывы <small>плохие — сразу вам</small></h4><div class="a-list">${a.reviews.map(r=>`<div class="a-li"><div><b style="font-weight:600">${r[0]}</b><br><span>${r[1]}</span></div><span class="tag ${r[2]}">${r[2]==='bad'?'в работу':'→ Яндекс Карты'}</span></div>`).join('')}</div></div>`);
+  o.push(L(`<h4>Рассылка <small>только с согласием</small></h4><div class="chips" style="margin-bottom:10px">${a.segments.map((s,i)=>`<span class="tag ${i===1?'ok':''}">${s}</span>`).join('')}</div><div class="compose">${C().msgs[0]}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn">Отправить в Telegram</button><button class="btn g">Запланировать</button></div><div class="a-li" style="margin-top:12px;border:0"><span>Прошлая: открыли 64% · пришли по ней 23 гостя</span></div>`,2,"card c7"));
+  o.push(L(`<h4>Сводка владельцу <small>каждый день в 22:00</small></h4><div class="tgmsg">${a.summary}</div>`,2,"card c5"));
+  o.push(L(`<h4>Триггеры <small>работают сами</small></h4><div class="a-list">${a.triggers.map(t=>`<div class="a-li"><div><b style="font-weight:600">${t[0]}</b><br><span>${t[1]}</span></div><i class="tgl ${t[2]?'':'off'}"></i></div>`).join('')}</div>`,2,"card c4"));
+  o.push(L(`<h4>Уровни гостей</h4><div class="dist">${a.levels.map(l=>`<div><span>${l[0]}</span><span class="b"><i style="width:${l[1]}%"></i></span><span>${l[1]}%</span></div>`).join('')}</div>`,2,"card c4"));
+  a.niche.forEach((x,i)=>o.push(L(`<h4>${x.title} <small>${x.sub}</small></h4>${x.html}`,x.t,"card "+(a.niche.length>1?(i?"c4":"c8"):"c4"))));
+  o.push(L(`<h4>${a.salesTitle} <small>за неделю</small></h4><div class="bars">${a.sales.map(s=>`<div><i style="height:${s[1]}%"></i></div>`).join('')}</div><div class="bars-l">${a.sales.map(s=>`<span>${s[0]}</span>`).join('')}</div>`,2,"card c6"));
+  o.push(L(`<h4>Тепловая карта <small>часы × дни</small></h4>${heat()}`,3,"card c6"));
+  o.push(L(`<h4>Кто перестал ходить <small>были постоянными</small></h4><div class="a-list">${a.churn.map(c=>`<div class="a-li"><div><b style="font-weight:600">${c[0]}</b><br><span>${c[1]}</span></div><button class="btn">Вернуть</button></div>`).join('')}</div>`,3,"card c5"));
+  o.push(L(`<h4>ИИ-аналитик <small>по данным ${a.pos.sys}</small></h4><div class="ai"><div class="q">${a.ai[0]}</div><div class="a">${a.ai[1]}</div></div>`,3,"card c7"));
+  o.push(L(`<h4>Игры <small>после запуска</small></h4><div class="a-list">${a.games.map(g=>`<div class="a-li"><span style="color:var(--text)">${g[0]}</span><span>${g[1]}</span></div>`).join('')}</div>`,3,"card c6"));
+  o.push(L(`<h4>Точки и каналы <small>сегодня</small></h4><div class="a-list">${a.points.map(p=>`<div class="a-li"><span style="color:var(--text)">${p[0]}</span><span>${p[1]} <span class="tag ok">${p[2]}</span></span></div>`).join('')}</div>`,3,"card c6"));
+  document.getElementById("adminView").innerHTML=o.join('');
+}
+function heat(){const days=["пн","вт","ср","чт","пт","сб","вс"],hrs=[8,9,10,11,12,13,14,15,16,17,18,19,20,21];let s=`<div class="heat"><span></span>${hrs.map(h=>`<span style="text-align:center">${h}</span>`).join('')}`;let seed=niche.length*31;const r=()=>(seed=(seed*9301+49297)%233280)/233280;
+  days.forEach((d,di)=>{s+=`<span>${d}</span>`;hrs.forEach(h=>{let v=.15+r()*.3;if(niche==='zerno'){if(h<=10)v+=.45;if(h>=13&&h<=14)v+=.25}else if(niche==='dakai'){if(h>=19)v+=.4;if(di>=5)v+=.2}else{if(h>=11&&h<=14)v+=.3;if(di===4)v+=.3}v=Math.min(1,v);s+=`<i style="background:rgba(198,244,50,${v.toFixed(2)})"></i>`})});return s+`</div>`}
+
+/* ---------- модули ---------- */
+const MODS=[
+  ["Виджеты в чате Telegram · новое",[["Живой статус заказа","Одно сообщение само меняется: принят → готовим → готов. Без спама уведомлениями.",2],["Дроп в сообщении","Таймер, размеры и кнопка «Отложить» прямо в чате.",2],["Игра в сообщении","Колесо или скретч внутри чата — прогресс сохраняется.",3],["Карта гостя в чате","Баланс и QR обновляются в том же сообщении после покупки.",2]]],
+  ["Лояльность",[["Карта гостя","QR и короткий код, баланс, уровень — в Telegram и по ссылке.",1],["Баллы и штампы","Кэшбэк, «6-й в подарок», сгорание баллов.",1],["Интеграция с кассой","iiko, МойСклад, Posiflora — баллы и заказы приходят сами.",2],["Уровни","Гость → Завсегдатай → Свой, привилегии на каждом.",2],["Реферальная программа","Приведи друга — бонус обоим.",3]]],
+  ["Игры",[["Достижения","Значки за серии, время визитов, отзывы.",2],["Серии визитов","Неделя за неделей — бонус, есть «заморозка».",2],["Колесо призов","Крутите после N-го визита. Модуль после запуска.",3,"wheel"],["Скретч-карта","Сотри и получи промокод. Модуль после запуска.",3,"scratch"],["Адвент-календарь","Окошко в день к празднику. Модуль после запуска.",3,"advent"]]],
+  ["Связь с гостями",[["Telegram-бот","Карта, меню, заказы и сообщения в одном чате.",1],["Веб-приложение","Сайт на экран «Домой», уведомления без App Store.",1],["Отзывы","4–5★ — на Яндекс Карты и в 2ГИС, плохие — владельцу.",1],["Рассылки","По сегментам, только с согласием, с отпиской.",2],["Триггеры","День рождения, «давно не были», сгорание баллов.",2],["Wallet","Карта на экране блокировки iPhone. Скоро.",2]]],
+  ["Аналитика",[["Сводка в 22:00","Выручка, чеки, новые и вернувшиеся гости — в Telegram.",2],["Тепловая карта","Часы × дни: когда пусто, когда пик.",3],["Кто перестал ходить","Постоянные гости, которые пропали, — кнопка «Вернуть».",3],["ИИ-аналитик","Спросите словами: «почему упала выручка?».",3]]]
+];
+function renderMods(){
+  const c=C();
+  const left=MODS.map(([cat,list])=>`<div class="mcat"><h3>${cat} <small>${list.length} модулей</small></h3><div class="mgrid">${list.map(m=>`<button class="mod" ${m[3]?`data-game="${m[3]}"`:''}><b>${m[0]}</b><p>${m[1]}</p><div class="t"><span class="tag ${tier>=m[2]?'ok':''}">${TIERS[m[2]][0]}${tier>=m[2]?' · в вашем тарифе':''}</span>${m[3]?'<span class="tag">смотреть →</span>':''}</div></button>`).join('')}</div></div>`).join('')
+    +`<div class="mcat"><h3>Вау-эффекты <small>${FX.length} эффектов · в «Про» или +1 490 ₽</small></h3><div class="mgrid">${FX.map(f=>`<button class="mod" data-fx="${f[0]}"><b>${f[1]}</b><p>${f[2]}</p><div class="t"><span class="tag">смотреть →</span></div></button>`).join('')}</div></div>`;
+  const right=`<div class="prev"><div class="tabs"><button data-ptab="fx" class="${prevTab==='fx'?'on':''}">Вау-эффекты</button><button data-ptab="game" class="${prevTab==='game'?'on':''}">Игры</button><button data-ptab="tg" class="${prevTab==='tg'?'on':''}">Виджеты Telegram</button></div><div id="pvBody"></div></div>`;
+  document.getElementById("modsView").innerHTML=`<div>${left}</div>${right}`;
+  document.querySelectorAll("[data-ptab]").forEach(b=>b.onclick=()=>{prevTab=b.dataset.ptab;renderMods()});
+  document.querySelectorAll("[data-fx]").forEach(b=>b.onclick=()=>{modFx=b.dataset.fx;prevTab="fx";renderMods()});
+  document.querySelectorAll("[data-game]").forEach(b=>b.onclick=()=>{prevTab="game";previewGame=b.dataset.game;renderMods()});
+  document.querySelectorAll(".mcat:first-child .mod").forEach(b=>b.onclick=()=>{prevTab="tg";renderMods();scrollTo({top:0,behavior:"smooth"})});
+  renderPreview();
+}
+let previewGame=null;
+function renderPreview(){
+  const c=C(),pv=document.getElementById("pvBody");
+  if(prevTab==="fx"){
+    const cur=modFx||c.fx,f=FX.find(x=>x[0]===cur);
+    pv.innerHTML=`<div class="chips" style="margin-bottom:12px">${FX.map(x=>`<button class="tag ${x[0]===cur?'ok':''}" data-fxp="${x[0]}" style="cursor:pointer">${x[1]}</button>`).join('')}</div>
+      <div class="pv-site">${fxHTML(cur,c)}<div class="mono" style="color:var(--b-acc);position:relative;z-index:2">// ${c.brand}</div><h2 style="margin-top:8px">${c.hero[0]}</h2><p>${c.hero[1]}</p></div>
+      <div class="pv-desc"><b>${f[1]}.</b> ${f[2]} Выбранный эффект появится на сайте в режиме «Гость» на тарифе «Про».</div>`;
+    pv.querySelectorAll("[data-fxp]").forEach(b=>b.onclick=()=>{modFx=b.dataset.fxp;renderMods()});
+    document.querySelectorAll("[data-fx]").forEach(b=>b.classList.toggle("on",b.dataset.fx===cur));
+  } else if(prevTab==="tg"){
+    pv.innerHTML=`<div class="pv-tg"><div class="pv-tgchat"><div class="msg">Здравствуйте! Заказ принят 👍</div>${bubbleHTML(c)}</div></div>
+      <div class="pv-desc"><b>HTML-виджеты в сообщениях</b> — новинка Telegram 13.2 (ноябрь 2026). Сообщение бота становится маленьким приложением прямо в чате: статус заказа, таймер дропа, игра — обновляются в том же сообщении, без открытия мини-приложения. Нажмите «${c.bubble.btns[0]}».</div>`;
+    bubbleStart(pv);
+  } else {
+    const kinds={wheel:N.zerno.game,scratch:N.dakai.game,advent:N.pion.game}, cur=previewGame||c.game.kind;
+    pv.innerHTML=`<div class="chips" style="margin-bottom:12px">${[["wheel","Колесо призов"],["scratch","Скретч-карта"],["advent","Адвент-календарь"]].map(x=>`<button class="tag ${x[0]===cur?'ok':''}" data-gp="${x[0]}" style="cursor:pointer">${x[1]}</button>`).join('')}</div>
+      <div class="pv-game" id="pvGame">${gameHTML(cur===c.game.kind?c.game:kinds[cur])}</div>
+      <div class="pv-desc"><b>Игры с призами</b> запускаются по правилам акции: исход определяет сервер заранее, призы и налоги учитываются автоматически. Модули после запуска платформы.</div>`;
+    pv.querySelectorAll("[data-gp]").forEach(b=>b.onclick=()=>{previewGame=b.dataset.gp;renderMods()});
+    document.querySelectorAll("[data-game]").forEach(b=>b.classList.toggle("on",b.dataset.game===cur));
+    const g=cur===c.game.kind?c.game:kinds[cur], saved=N[niche].game; N[niche].game=g; gameStart(pv); N[niche].game=saved;
+    pv.querySelectorAll("[data-spin]").forEach(b=>{const fn=b.onclick;b.onclick=()=>{N[niche].game=g;fn();setTimeout(()=>N[niche].game=saved,3300)}});
+  }
+  fxStart(pv);
+}
+
+/* ---------- склейка ---------- */
+function applyColors(){const c=C().colors,r=document.documentElement.style;r.setProperty('--b-bg',c.bg);r.setProperty('--b-text',c.text);r.setProperty('--b-muted',c.muted);r.setProperty('--b-acc',c.acc);r.setProperty('--b-dark',c.dark);r.setProperty('--b-card',c.card)}
+function render(){
+  const c=C();
+  document.title=`${c.title} — демо Teglo`;
+  document.querySelectorAll(".niches a").forEach(a=>a.classList.toggle("on",a.dataset.n===niche));
+  document.querySelectorAll("[data-mode]").forEach(b=>b.classList.toggle("on",b.dataset.mode===mode));
+  document.querySelectorAll("[data-tier]").forEach(b=>b.classList.toggle("on",+b.dataset.tier===tier));
+  document.getElementById("lgKicker").textContent=c.kicker;
+  document.getElementById("lgTitle").textContent=c.title+(mode==="guest"?" — глазами гостя":mode==="admin"?" — кабинет владельца":" — библиотека модулей");
+  document.getElementById("lgText").textContent=mode==="mods"?"Все модули платформы по разделам. Нажмите на вау-эффект или игру — посмотрите вживую на этом заведении.":c.text;
+  document.getElementById("tierPrice").textContent=TIERS[tier][0]+" · "+TIERS[tier][1];
+  document.getElementById("tierFounder").textContent=TIERS[tier][2];
+  document.getElementById("root").className="wrap tier-"+(tier===3?"pro":tier===2?"base":"start");
+  applyColors();
+  ["guest","admin","mods"].forEach(m=>document.getElementById(m+"View").classList.toggle("hide",mode!==m));
+  if(mode==="guest")renderGuest();else if(mode==="admin")renderAdmin();else renderMods();
+  const u=new URL(location.href);u.searchParams.set("n",niche);u.searchParams.set("m",mode);u.searchParams.set("t",tier);history.replaceState(null,"",u);
+}
+document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;render()});
+document.querySelectorAll("[data-tier]").forEach(b=>b.onclick=()=>{tier=+b.dataset.tier;render()});
+document.querySelectorAll(".niches a").forEach(a=>a.onclick=e=>{e.preventDefault();niche=a.dataset.n;modFx=null;previewGame=null;render();scrollTo({top:0})});
+document.getElementById("ctaTop").href=TG_LINK;
+
+function openHome(){
+  const c=C(),ic=`style="background:${c.colors.acc};color:#fff"`,names=["Фото","Карты","Почта","Погода","Музыка","Заметки","Камера","Часы","Настройки","Telegram","Календарь"];
+  let h=names.slice(0,9).map(n=>`<div><i></i>${n}</div>`).join('')+`<div><i class="app" ${ic}>${c.brand.slice(0,2)}</i>${c.brand}</div>`+names.slice(9).map(n=>`<div><i></i>${n}</div>`).join('')+`<span class="dock"></span>`;
+  document.getElementById("homeScr").innerHTML=h;const k=c.card;
+  document.getElementById("saScr").innerHTML=`<div class="sb"><span>9:41</span><span>●●● ▮</span></div><div class="body"><div class="w gcard" style="padding:12px"><div class="top"><span class="brand" style="font-size:15px">${c.brand}</span><span class="lvl">${k.level}</span></div><div class="code" style="font-size:13px">${k.code}</div><div class="bal"><span class="mono" style="opacity:.75">${k.unit}</span><b style="font-size:24px">${k.bal}</b></div></div><div class="msg" style="font-size:11.5px">${c.msgs[0]}</div><div class="w" style="padding:10px"><h4 style="font-size:11.5px;margin-bottom:6px">${c.itemsTitle}</h4>${c.items.slice(0,3).map(i=>`<div class="li" style="font-size:11.5px"><span style="color:var(--b-text)">${i[0]}</span><b>${i[1]}</b></div>`).join('')}</div></div><div class="tabs"><span>Карта</span><span>${niche==='zerno'?'Меню':'Каталог'}</span><span>Профиль</span></div>`;
+  document.getElementById("mTitle").textContent=`${c.title} — как приложение`;document.getElementById("modal").classList.add("on");
+}
+document.getElementById("homeBtn").onclick=openHome;
+document.getElementById("mx").onclick=()=>document.getElementById("modal").classList.remove("on");
+document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("on")};
+addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("modal").classList.remove("on")});
+render();
+setInterval(()=>document.querySelectorAll("[data-cd]").forEach(el=>{const p=el.textContent.split(" : ").map(Number);let s=p[0]*3600+p[1]*60+p[2]-1;if(s<0)s=0;const z=n=>String(n).padStart(2,"0");el.textContent=`${z(Math.floor(s/3600))} : ${z(Math.floor(s%3600/60))} : ${z(s%60)}`}),1000);
+</script>
+</body>
+</html>
