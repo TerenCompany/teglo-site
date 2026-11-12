@@ -326,6 +326,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .pv-tgchat{max-width:340px;display:flex;flex-direction:column;gap:10px}
 .pv-tgchat .msg{align-self:flex-start;background:#fff;color:#111;border-radius:14px 14px 14px 4px;padding:8px 12px;font-size:13px}
 .tgw-src{margin-top:10px;padding-top:8px;border-top:1px dashed rgba(0,0,0,.12);font-size:11px;line-height:1.35;color:var(--b-muted)}
+
+/* режим мини-приложения Telegram: ?view=app */
+body.appv .bar,body.appv .legend,body.appv .foot{display:none!important}
+body.appv .wrap{padding:0!important;max-width:none!important}
+body.appv .guest{display:block}
+body.appv .phone{position:static;width:100%;height:auto;max-height:none;border:0;border-radius:0;padding:0;box-shadow:none;background:transparent}
+body.appv .scr{height:auto;min-height:100vh;border-radius:0}
+body.appv .tg-top{display:none}
+body.appv .app{overflow:visible;padding:14px 14px 90px}
+body.appv .tg-bottom{position:fixed;left:0;right:0;bottom:0;z-index:5;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+.av-sw{background:#17212B;padding:10px 12px 8px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;z-index:6}
+.av-row{display:flex;gap:6px}
+.av-row button{flex:1;border:0;border-radius:10px;padding:8px 4px;font:600 12.5px "Inter Tight",sans-serif;background:#232E3C;color:#cfd8e3;cursor:pointer}
+.av-row button.on{background:#2AABEE;color:#fff}
 </style></head>
 <body>
 <header class="bar">
@@ -600,6 +614,8 @@ let niche=N[qs.get("n")]?qs.get("n"):"zerno";
 let mode=["guest","admin","mods"].includes(qs.get("m"))?qs.get("m"):"guest";
 let tier=+qs.get("t")||2;
 let modFx=null, prevTab="fx";
+const APPV=qs.get("view")==="app";
+if(APPV){document.body.classList.add("appv");mode="guest";if(!qs.get("t"))tier=3;}
 const C=()=>N[niche];
 
 function qrSVG(seed){let x=seed,s='';const r=()=>(x=(x*9301+49297)%233280)/233280;const n=21;
@@ -698,11 +714,14 @@ function renderGuest(){
   b.push(wrapLock(`<h4>${c.game2[0]} <span class="game-tag">после запуска</span></h4><div class="li"><span>${c.game2[1]}</span></div>`,3));
   b.push(wrapLock(`<h4>Твой год с ${c.brand}</h4><div class="list">${c.recap.map(r=>`<div class="li"><b class="big" style="font-size:22px">${r[0]}</b><span>${r[1]}</span></div>`).join('')}</div>`,3));
 
-  const phone=`<div class="phone"><div class="scr">
+  const sw=APPV?`<div class="av-sw"><div class="av-row">${[["zerno","☕ Кофейня"],["dakai","👕 Бренд"],["pion","💐 Цветы"]].map(x=>`<button data-avn="${x[0]}" class="${x[0]===niche?'on':''}">${x[1]}</button>`).join('')}</div><div class="av-row">${[1,2,3].map(t=>`<button data-avt="${t}" class="${t===tier?'on':''}">${TIERS[t][0]}</button>`).join('')}</div></div>`:'';
+  const phone=`<div class="phone"><div class="scr">${sw}
     <div class="tg-top"><div class="av" style="background:var(--b-acc)">${c.brand[0].toUpperCase()}</div><div><b>${c.brand}</b><span>бот · ${c.bot}</span></div></div>
     <div class="app">${b.join('')}</div>
     <div class="tg-bottom"><div>Карта</div><div>${niche==='zerno'?'Меню':'Каталог'}</div><div>Профиль</div></div></div></div>`;
-  const v=document.getElementById("guestView"); v.innerHTML=site+phone; fxStart(v); if(tier>=3) gameStart(v); if(tier>=2) bubbleStart(v);
+  const v=document.getElementById("guestView"); v.innerHTML=(APPV?"":site)+phone;
+  v.querySelectorAll("[data-avn]").forEach(b=>b.onclick=()=>{niche=b.dataset.avn;render()});
+  v.querySelectorAll("[data-avt]").forEach(b=>b.onclick=()=>{tier=+b.dataset.avt;render()}); fxStart(v); if(tier>=3) gameStart(v); if(tier>=2) bubbleStart(v);
 }
 
 /* ---------- владелец ---------- */
@@ -809,6 +828,7 @@ document.getElementById("homeBtn").onclick=openHome;
 document.getElementById("mx").onclick=()=>document.getElementById("modal").classList.remove("on");
 document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("on")};
 addEventListener("keydown",e=>{if(e.key==="Escape")document.getElementById("modal").classList.remove("on")});
+if(APPV){const t=document.createElement("script");t.src="https://telegram.org/js/telegram-web-app.js";t.onload=()=>{try{Telegram.WebApp.ready();Telegram.WebApp.expand()}catch(e){}};document.head.appendChild(t)}
 render();
 setInterval(()=>document.querySelectorAll("[data-cd]").forEach(el=>{const p=el.textContent.split(" : ").map(Number);let s=p[0]*3600+p[1]*60+p[2]-1;if(s<0)s=0;const z=n=>String(n).padStart(2,"0");el.textContent=`${z(Math.floor(s/3600))} : ${z(Math.floor(s%3600/60))} : ${z(s%60)}`}),1000);
 </script>

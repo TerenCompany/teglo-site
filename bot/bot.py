@@ -26,6 +26,7 @@ from aiogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    MenuButtonWebApp,
     Message,
     WebAppInfo,
 )
@@ -152,8 +153,15 @@ def kb(rows):
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
+def app_url(key: str = "zerno") -> str:
+    return f"{SITE_URL}/demo.html?view=app&n={key}&t=3"
+
+
 def main_menu() -> InlineKeyboardMarkup:
-    rows = [
+    rows = []
+    if SITE_URL.startswith("https://"):
+        rows.append([InlineKeyboardButton(text="📱 Открыть приложение заведения", web_app=WebAppInfo(url=app_url()))])
+    rows += [
         [InlineKeyboardButton(text="🧪 Попробовать как гость", callback_data="g")],
         [InlineKeyboardButton(text="📊 Кабинет владельца", callback_data="o")],
         [InlineKeyboardButton(text="💬 Оставить заявку", callback_data="lead")],
@@ -183,8 +191,8 @@ def guest_menu(key: str) -> InlineKeyboardMarkup:
     ]
     if SITE_URL.startswith("https://"):
         rows.append([InlineKeyboardButton(
-            text="📱 Открыть сайт заведения",
-            web_app=WebAppInfo(url=f"{SITE_URL}/demo.html?n={key}&m=guest&t=3"))])
+            text="📱 Открыть приложение",
+            web_app=WebAppInfo(url=app_url(key)))])
     rows.append([InlineKeyboardButton(text="💬 Хочу так же", callback_data="lead"),
                  InlineKeyboardButton(text="← Назад", callback_data="g")])
     return kb(rows)
@@ -206,8 +214,8 @@ def back(key: str, to: str = "gn") -> InlineKeyboardMarkup:
 # ---------------------------------------------------------------- тексты
 WELCOME = (
     "Привет! Это <b>Teglo</b> — сайт, бот и программа лояльности для малого бизнеса.\n\n"
-    "Здесь можно потрогать, как будет работать бот вашего заведения: карта гостя, меню, "
-    "живой статус заказа, игры, рассылки и сводка владельцу.\n\n"
+    "Здесь можно потрогать, как будет работать бот и мини-приложение вашего заведения: карта гостя, "
+    "меню, живой статус заказа, игры, рассылки и сводка владельцу.\n\n"
     "Выберите, с чего начать 👇"
 )
 
@@ -476,6 +484,9 @@ async def fallback(m: Message):
 async def main():
     bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     await bot.set_my_commands([])  # меню команд не нужно — всё на кнопках
+    if SITE_URL.startswith("https://"):
+        # кнопка «Приложение» слева от поля ввода — открывает мини-приложение
+        await bot.set_chat_menu_button(menu_button=MenuButtonWebApp(text="Приложение", web_app=WebAppInfo(url=app_url())))
     log.info("Teglo bot started")
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
