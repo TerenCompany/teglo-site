@@ -387,6 +387,18 @@ body.appv .tg-bottom [data-tabbtn].on{background:#2AABEE;color:#fff}
 .bprev .site{position:relative;top:0;height:720px}
 @media (max-width:980px){.build{grid-template-columns:1fr}.bprev{position:relative;top:0}.bmods{grid-template-columns:1fr}}
 .tosend{margin-top:10px;width:100%;background:#2AABEE!important;color:#fff!important}
+
+#appTop{position:sticky;top:0;z-index:20}
+.av-row button.lead{background:#C6F432;color:#0E0F12}
+.av-note{font:500 12.5px "Inter Tight",sans-serif;color:#cfd8e3;display:flex;align-items:center;gap:8px;padding:2px 2px 4px}
+.av-note button{border:0;background:#232E3C;color:#cfd8e3;border-radius:8px;padding:4px 8px;font:600 12px "Inter Tight",sans-serif}
+body.appv .adm{grid-template-columns:1fr;padding:12px;gap:12px}
+body.appv .adm>*{grid-column:auto!important}
+body.appv .build{grid-template-columns:1fr;padding:12px}
+body.appv .bmods{grid-template-columns:1fr}
+body.appv .bstep{padding:16px;gap:10px}
+.bview{margin-top:10px;background:#2AABEE!important}
+body.appv .av-sw{position:static}
 </style></head>
 <body>
 <header class="bar">
@@ -664,7 +676,7 @@ let tier=+qs.get("t")||2;
 let modFx=null, prevTab="fx";
 const APPV=qs.get("view")==="app";
 let appTab="card";
-if(APPV){document.body.classList.add("appv");mode="guest";if(!qs.get("t"))tier=3;}
+if(APPV){document.body.classList.add("appv");if(!qs.get("m"))mode="guest";if(!qs.get("t"))tier=3;}
 const BMODS=[
   ["points","Баллы и штампы","кэшбэк, «6-й в подарок»",1],
   ["reviews","Отзывы на карты","4–5★ — на Яндекс Карты, плохие — вам",1],
@@ -681,8 +693,10 @@ const SWATCH=["#A0522D","#111111","#C2185B","#2E7D32","#1565C0","#6A1B9A","#E651
 let cfg=null;
 function cfgReset(){const n=N[niche];cfg={name:n.brand,color:n.colors.acc,pos:niche==="zerno"?"iiko":"none",fx:n.fx,mods:new Set(["points","reviews","widgets","levels","push","ach","niche"])};}
 function cfgTier(){let t=cfg.pos==="iiko"?2:1;BMODS.forEach(m=>{if(cfg.mods.has(m[0]))t=Math.max(t,m[3])});return t}
-const C=()=>{if(mode!=="build"||!cfg)return N[niche];const n=N[niche];return Object.assign({},n,{brand:cfg.name||n.brand,title:`«${cfg.name||n.brand}»`,colors:Object.assign({},n.colors,{acc:cfg.color})})};
-const HAS=m=>mode!=="build"||!cfg||cfg.mods.has(m);
+const ACT=()=>!!cfg&&(mode==="build"||(APPV&&cfg.touched));
+const C=()=>{if(!ACT())return N[niche];const n=N[niche];return Object.assign({},n,{brand:cfg.name||n.brand,title:`«${cfg.name||n.brand}»`,colors:Object.assign({},n.colors,{acc:cfg.color,dark:shade(cfg.color,.45)})})};
+function shade(h,k){const n=parseInt(h.slice(1),16),f=x=>Math.round(x*(1-k)).toString(16).padStart(2,"0");return "#"+f(n>>16&255)+f(n>>8&255)+f(n&255)}
+const HAS=m=>!ACT()||cfg.mods.has(m);
 
 function qrSVG(seed){let x=seed,s='';const r=()=>(x=(x*9301+49297)%233280)/233280;const n=21;
   for(let i=0;i<n;i++)for(let j=0;j<n;j++){const f=(i<7&&j<7)||(i>n-8&&j<7)||(i<7&&j>n-8);if(f){const ii=i<7?i:i-(n-7),jj=j<7?j:j-(n-7);if(ii===0||ii===6||jj===0||jj===6||(ii>1&&ii<5&&jj>1&&jj<5))s+=`<rect x="${j}" y="${i}" width="1" height="1"/>`}else if(r()>.52)s+=`<rect x="${j}" y="${i}" width="1" height="1"/>`}
@@ -745,7 +759,7 @@ function renderGuest(target="guestView",part="both"){
     <div class="viewport">
       <div class="s-nav"><b>${c.brand}</b><span>${c.nav.map(x=>`<a href="#" style="text-decoration:none">${x}</a>`).join('')}</span></div>
       <div class="s-hero">
-        ${(mode==='build'?(HAS('wow')&&cfg.fx):tier>=3)?fxHTML(mode==='build'?cfg.fx:(modFx||c.fx),c):''}
+        ${(ACT()?(HAS('wow')&&cfg.fx):tier>=3)?fxHTML(ACT()?cfg.fx:(modFx||c.fx),c):''}
         <span class="wow-tag">вау-дизайн</span>
         <div class="mono" style="color:var(--b-acc);position:relative;z-index:2">// ${c.brand}</div>
         <h2 style="margin-top:10px">${c.hero[0]}</h2>
@@ -783,8 +797,8 @@ function renderGuest(target="guestView",part="both"){
   T("profile",`<div class="w"><h4>Как вам у нас?</h4><div class="stars"><i></i><i></i><i></i><i></i><i class="e"></i></div><div class="li"><span>4–5★ — предложим отзыв на Яндекс Картах и в 2ГИС</span></div></div>`,"reviews");
   T("profile",wrapLock(`<h4>Твой год с ${c.brand}</h4><div class="list">${c.recap.map(r=>`<div class="li"><b class="big" style="font-size:22px">${r[0]}</b><span>${r[1]}</span></div>`).join('')}</div>`,3),"recap");
 
-  const sw=APPV?`<div class="av-sw"><div class="av-row">${[["zerno","☕ Кофейня"],["dakai","👕 Бренд"],["pion","💐 Цветы"]].map(x=>`<button data-avn="${x[0]}" class="${x[0]===niche?'on':''}">${x[1]}</button>`).join('')}</div><div class="av-row">${[1,2,3].map(t=>`<button data-avt="${t}" class="${t===tier?'on':''}">${TIERS[t][0]}</button>`).join('')}</div></div>`:'';
-  const phone=`<div class="phone"><div class="scr">${sw}
+  const swOld=APPV?`<div class="av-sw"><div class="av-row">${[["zerno","☕ Кофейня"],["dakai","👕 Бренд"],["pion","💐 Цветы"]].map(x=>`<button data-avn="${x[0]}" class="${x[0]===niche?'on':''}">${x[1]}</button>`).join('')}</div><div class="av-row">${[1,2,3].map(t=>`<button data-avt="${t}" class="${t===tier?'on':''}">${TIERS[t][0]}</button>`).join('')}</div></div>`:'';
+  const phone=`<div class="phone"><div class="scr">
     <div class="tg-top"><div class="av" style="background:var(--b-acc)">${c.brand[0].toUpperCase()}</div><div><b>${c.brand}</b><span>бот · ${c.bot}</span></div></div>
     <div class="app">${b.join('')}</div>
     <div class="tg-bottom">${[["card","Карта"],["catalog",niche==='zerno'?'Меню':'Каталог'],["profile","Профиль"]].map(x=>`<div data-tabbtn="${x[0]}" class="${APPV&&appTab===x[0]?'on':''}">${x[1]}</div>`).join('')}</div></div></div>`;
@@ -869,6 +883,24 @@ function renderPreview(){
   fxStart(pv);
 }
 
+/* ---------- верхняя панель мини-приложения ---------- */
+function leadLink(){return `${TG_LINK.split('?')[0]}?start=${cfg&&cfg.touched?cfgCode():'lead'}`}
+function openLead(){const u=leadLink(),tg=window.Telegram&&Telegram.WebApp;if(tg&&tg.initData){tg.openTelegramLink(u);setTimeout(()=>tg.close(),300)}else open(u,"_blank")}
+function renderAppTop(){
+  let el=document.getElementById("appTop");
+  if(!el){el=document.createElement("div");el.id="appTop";document.getElementById("root").prepend(el)}
+  const m=[["guest","Гость"],["admin","Владелец"],["build","Собрать"]];
+  const custom=cfg&&cfg.touched;
+  el.innerHTML=`<div class="av-sw"><div class="av-row">${m.map(x=>`<button data-avm="${x[0]}" class="${x[0]===mode?'on':''}">${x[1]}</button>`).join('')}<button data-avlead class="lead">Заявка</button></div>
+   ${mode==="build"?"":`<div class="av-row">${[["zerno","☕ Кофейня"],["dakai","👕 Бренд"],["pion","💐 Цветы"]].map(x=>`<button data-avn="${x[0]}" class="${x[0]===niche&&!custom?'on':''}">${x[1]}</button>`).join('')}</div>
+   ${custom?`<div class="av-note">Показано ваше заведение «${cfg.name}» · ${TIERS[tier][0]} <button data-avreset>сбросить</button></div>`:`<div class="av-row">${[1,2,3].map(t=>`<button data-avt="${t}" class="${t===tier?'on':''}">${TIERS[t][0]}</button>`).join('')}</div>`}`}</div>`;
+  el.querySelectorAll("[data-avm]").forEach(b=>b.onclick=()=>{mode=b.dataset.avm;render();scrollTo(0,0)});
+  el.querySelectorAll("[data-avn]").forEach(b=>b.onclick=()=>{niche=b.dataset.avn;cfg=null;render()});
+  el.querySelectorAll("[data-avt]").forEach(b=>b.onclick=()=>{tier=+b.dataset.avt;render()});
+  el.querySelectorAll("[data-avreset]").forEach(b=>b.onclick=()=>{cfg=null;render()});
+  el.querySelector("[data-avlead]").onclick=openLead;
+}
+
 /* ---------- конструктор ---------- */
 let bPrev="phone";
 function cfgCode(){const nc={zerno:"z",dakai:"d",pion:"p"}[niche];let mask=0;BMODS.forEach((m,i)=>{if(cfg.mods.has(m[0]))mask|=1<<i});return `c_${nc}${cfgTier()}${cfg.pos==="iiko"?"i":"n"}_${mask.toString(36)}_${FX.findIndex(f=>f[0]===cfg.fx)}`}
@@ -889,12 +921,14 @@ function renderBuild(){
    <div class="bstep"><div class="bnum">3</div><div class="bbody"><h3>Итог</h3>
      <div class="btot"><div><span class="mono">тариф</span><b>${TIERS[t][0]} · ${TIERS[t][1]}</b><small>${TIERS[t][2]}</small></div></div>
      <p class="bnote">${cfg.pos==="iiko"?`Интеграция с ${posOpts[1][1]} — от «Основы». `:''}Запуск за 7 дней, первым 20 заведениям — бесплатно.</p>
-     <a class="cta bgo" href="${TG_LINK.split('?')[0]}?start=${cfgCode()}" target="_blank" rel="noopener">Запустить так →</a>
+     <a class="cta bgo" href="${TG_LINK.split('?')[0]}?start=${cfgCode()}" target="_blank" rel="noopener" data-blead>Запустить так →</a>${APPV?`<button class="btn-b bview" data-bview>👀 Посмотреть как гость</button>`:''}
    </div></div></div>`;
   const right=`<div class="bprev"><div class="tabs"><button data-bv="phone" class="${bPrev==='phone'?'on':''}">Мини-приложение и бот</button><button data-bv="site" class="${bPrev==='site'?'on':''}">Сайт</button></div><div id="bPrevBox"></div></div>`;
-  const v=document.getElementById("buildView"); v.innerHTML=left+right;
-  renderGuest("bPrevBox",bPrev);
-  const re=()=>render();
+  const v=document.getElementById("buildView"); v.innerHTML=left+(APPV?"":right);
+  if(!APPV)renderGuest("bPrevBox",bPrev);
+  v.querySelector("[data-blead]").onclick=e=>{e.preventDefault();cfg.touched=true;openLead()};
+  v.querySelectorAll("[data-bview]").forEach(b=>b.onclick=()=>{cfg.touched=true;mode="guest";appTab="card";render();scrollTo(0,0)});
+  const re=()=>{if(cfg)cfg.touched=true;render()};
   v.querySelector("#bName").oninput=e=>{cfg.name=e.target.value;clearTimeout(window._bt);window._bt=setTimeout(()=>{const pos=e.target.selectionStart;re();const i=document.getElementById("bName");i.focus();i.setSelectionRange(pos,pos)},250)};
   v.querySelectorAll("[data-bn]").forEach(b=>b.onclick=()=>{niche=b.dataset.bn;cfg=null;re()});
   v.querySelectorAll("[data-bc]").forEach(b=>b.onclick=()=>{cfg.color=b.dataset.bc;re()});
@@ -908,7 +942,9 @@ function renderBuild(){
 /* ---------- склейка ---------- */
 function applyColors(){const c=C().colors,r=document.documentElement.style;r.setProperty('--b-bg',c.bg);r.setProperty('--b-text',c.text);r.setProperty('--b-muted',c.muted);r.setProperty('--b-acc',c.acc);r.setProperty('--b-dark',c.dark);r.setProperty('--b-card',c.card)}
 function render(){
-  if(mode==="build"){if(!cfg||cfg._n!==niche){cfgReset();cfg._n=niche}tier=cfgTier()}
+  if(mode==="build"&&(!cfg||cfg._n!==niche)){cfgReset();cfg._n=niche}
+  if(ACT())tier=cfgTier();
+  if(APPV)renderAppTop();
   const c=C();
   document.title=`${c.title} — демо Teglo`;
   document.querySelectorAll(".niches a").forEach(a=>a.classList.toggle("on",a.dataset.n===niche));
