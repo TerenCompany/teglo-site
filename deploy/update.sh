@@ -14,4 +14,6 @@ if [ "$MODE" = "edge" ]; then
 else
   docker compose --env-file .env up -d --build --remove-orphans
 fi
+# если сайт отдаёт соседний Caddy в Docker — после пересоздания контейнера возвращаем его в общую сеть
+[ -f deploy/edge_net ] && docker network connect "$(cat deploy/edge_net)" teglo-web 2>/dev/null || true
 # статика монтируется томом — сайт обновляется сразу; бот пересобирается при изменении кода

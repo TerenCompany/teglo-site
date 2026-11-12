@@ -91,6 +91,7 @@ case "$MODE" in
     NET="$(docker inspect "$EDGE" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' | awk '{print $1}')"
     if [ -n "$CF" ] && [ -f "$CF" ] && [ -n "$NET" ]; then
       docker network connect "$NET" teglo-web 2>/dev/null || true
+      echo "$NET" > deploy/edge_net
       add_block "$CF" "teglo-web:80"
       if docker exec "$EDGE" caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
         docker exec "$EDGE" caddy reload --config /etc/caddy/Caddyfile
